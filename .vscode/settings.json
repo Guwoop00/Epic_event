@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": "/usr/bin/python3",
+    "terminal.integrated.env.osx": {
+      "PYTHONPATH": "/Users/guwoop/Documents/EpicEvents:/Users/guwoop/Documents/EpicEvents (original):/Users/guwoop/Documents/EpicEvents (original 2):/Users/guwoop/Documents/EE"
+    },
+    "terminal.integrated.env.linux": {
+      "PYTHONPATH": "/Users/guwoop/Documents/EpicEvents:/Users/guwoop/Documents/EpicEvents (original):/Users/guwoop/Documents/EpicEvents (original 2):/Users/guwoop/Documents/EE"
+    }
+  }
+  
