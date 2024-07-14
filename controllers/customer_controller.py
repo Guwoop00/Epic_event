@@ -2,9 +2,12 @@ from models.models import Customer
 from views.customer_view import CustomerView
 from sqlalchemy.orm import Session
 from datetime import date
+from rich.console import Console
 
 
 class CustomerController:
+    console = Console()
+
     def __init__(self, session: Session):
         self.session = session
         self.customer_view = CustomerView()
@@ -48,5 +51,4 @@ class CustomerController:
 
     def display_customers(self):
         customers = self.session.query(Customer).all()
-        for customer in customers:
-            self.customer_view.display_customers_view(customer)
+        self.customer_view.display_customers_view(customers)

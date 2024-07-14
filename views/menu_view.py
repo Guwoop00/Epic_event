@@ -1,39 +1,40 @@
-class MenuView:
+from rich.console import Console
+from rich.table import Table
 
-    def login_input(self):
-        print("Entrer vos identifiants")
-        email = input("Email de connexion: ")
-        password = input("Mot de passe: ")
-        return email, password
+
+class MenuView:
+    console = Console()
 
     @classmethod
     def select_choice(cls, title, options):
-        print()
-        print(title)
-        print("********************")
-        for i, option in enumerate(options, start=1):
-            print(f"[{i}] {option}")
-        print("********************")
+        cls.console.print(f"\n[bold yellow underline]{title}[/bold yellow underline]\n")
+        table = Table(show_header=True, header_style="bold cornflower_blue")
+        table.add_column("Option", style="yellow", justify="center")
+        table.add_column("Description", justify="center")
 
+        for i, option in enumerate(options, start=1):
+            table.add_row(str(i), option)
+
+        cls.console.print(table)
         while True:
             try:
                 choice = int(input("Quel est votre choix: "))
                 if 1 <= choice <= len(options):
                     return choice
                 else:
-                    print("Choix invalide. Merci d'entrer un nombre entre 1 et", len(options))
+                    cls.console.print(f"\n[bold red]Choix invalide. "
+                                      f"Merci d'entrer un nombre entre 1 et {len(options)}[/bold red]\n")
             except ValueError:
-                print("Choix invalide. Merci de rentrer un nombre valide.")
-
-            return cls.get_user_choice()
+                cls.console.print("\n[bold red]Choix invalide. Merci de rentrer un nombre valide.[/bold red]\n")
 
     @classmethod
     def get_user_choice(cls):
-        return int(input("Quel est votre choix ? : "))
+        return int(input("\nQuel est votre choix ? : \n"))
 
     @staticmethod
     def input_error():
-        print("Input error, entrez une option valide ! ")
+        console = Console()
+        console.print("\n[bold red]Input error, entrez une option valide ![/bold red]\n")
 
     @staticmethod
     def login_menu_options():
@@ -87,6 +88,28 @@ class MenuView:
             "Assigner un évenement à un support",
             "Database [Read Only]",
             "Se déconnecter"
+        ]
+        return title, options
+
+    @staticmethod
+    def filtered_contact_menu_options():
+        title = "Contacts filter"
+        options = [
+            "Contrats non signés",
+            "Contrats impayés",
+            "Contrats signés",
+            "Tous les contrats"
+        ]
+        return title, options
+
+    @staticmethod
+    def filtered_event_menu_options():
+        title = "Filtrer les événements"
+        options = [
+            "Événements sans support",
+            "Événements à venir",
+            "Événements passés",
+            "Tous les événements"
         ]
         return title, options
 

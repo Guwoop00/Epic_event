@@ -1,12 +1,18 @@
 from models.models import Event
 from views.event_view import EventView
+from views.menu_view import MenuView
 from sqlalchemy.orm import Session
+from datetime import date
+from rich.console import Console
 
 
 class EventController:
+    console = Console()
+
     def __init__(self, session: Session):
         self.session = session
         self.event_view = EventView()
+        self.menu_view = MenuView()
 
     def create_event(self):
         event_name, event_start_date, event_end_date, location, attendees, notes, contract_id = self.event_view.input_event_data()
@@ -44,14 +50,19 @@ class EventController:
     def get_event(self, event_id: int):
         return self.session.query(Event).filter(Event.id == event_id).first()
 
-    def get_all_event(self, event_id: int):
-        return self.session.query(Event).filter(Event.id == event_id).first()
-
     def display_events(self):
-        events = self.session.query(Event).all()
+        title, options = self.menu_view.filtered_event_menu_options()
+        filter_option = self.menu_view.select_choice(title, options)
+        events = self.get_filtered_events(filter_option)
         for event in events:
             self.event_view.display_events_view(event)
 
-    def retrieve_unassigned_events(self):
-        unassigned_events = self.session.query(Event).filter(Event.support_contact_id.is_(None)).all()
-        self.event_view.display_events(unassigned_events)
+    def get_filtered_events(self, filter_option):
+        if filter_option == 1:
+            return self.session.query(Event).filter(Event.support_contact_id.is_(None)).all()
+        elif filter_option == 2:
+            return self.session.query(Event).filter(Event.event_start_date > date.today()).all()
+        elif filter_option == 3:
+            return self.session.query(Event).filter(Event.event_end_date < date.today()).all()
+        else:
+            return self.session.query(Event).all()

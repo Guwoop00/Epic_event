@@ -1,6 +1,12 @@
+from rich.console import Console
+from rich.table import Table
+
+
 class CustomerView:
+    console = Console()
+
     def input_customer_data(self):
-        print("Créer un nouveau client")
+        self.console.print("\n[bold yellow]Créer un nouveau client[/bold yellow]\n")
         full_name = input("Nom complet: ")
         email = input("Email: ")
         phone = input("Téléphone: ")
@@ -8,7 +14,7 @@ class CustomerView:
         return full_name, email, phone, company_name
 
     def input_update_customer_data(self):
-        print("Mettre à jour le client")
+        self.console.print("\n[bold yellow]Mettre à jour le client[/bold yellow]\n")
         full_name = input("Nom complet (laisser vide pour ne pas changer): ")
         email = input("Email (laisser vide pour ne pas changer): ")
         phone = input("Téléphone (laisser vide pour ne pas changer): ")
@@ -27,10 +33,27 @@ class CustomerView:
         return customer_data
 
     def input_customer_id(self):
-        customer_id = int(input("Entrez l'ID du client: "))
+        customer_id = int(input("\nEntrez l'ID du client: \n"))
         return customer_id
 
-    def display_customers_view(self, customer):
-        print(f"customer ID: #{customer.id}, Nom complet: {customer.full_name}, Email: {customer.email},"
-              f"Téléphone: {customer.phone}, Entreprise: {customer.company_name}, "
-              f"Contact commercial: {customer.sales_contact.full_name}")
+    def display_customers_view(self, customers):
+        table = Table(title="Détails du client")
+
+        table.add_column("ID du client", header_style="bold cornflower_blue")
+        table.add_column("Nom complet", header_style="bold cornflower_blue")
+        table.add_column("Email", header_style="bold cornflower_blue")
+        table.add_column("Téléphone", header_style="bold cornflower_blue")
+        table.add_column("Entreprise", header_style="bold cornflower_blue")
+        table.add_column("Contact commercial", header_style="bold cornflower_blue")
+
+        for customer in customers:
+            table.add_row(
+                str(customer.id),
+                customer.full_name,
+                customer.email,
+                customer.phone,
+                customer.company_name,
+                customer.sales_contact.full_name
+            )
+
+        self.console.print(table)

@@ -7,9 +7,12 @@ from controllers.event_controller import EventController
 from controllers.customer_controller import CustomerController
 from controllers.contract_controller import ContractController
 from controllers.user_controller import UserController
+from rich.console import Console
 
 
 class MainController:
+    console = Console()
+
     def __init__(self):
         self.menu_view = MenuView()
         self.user_view = UserView()

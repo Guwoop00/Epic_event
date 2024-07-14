@@ -3,9 +3,12 @@ from views.menu_view import MenuView
 from views.user_view import UserView
 from models.models import User
 from sqlalchemy.orm import Session
+from rich.console import Console
 
 
 class UserController:
+    console = Console()
+
     def __init__(self, session: Session):
         self.session = session
         self.menu_view = MenuView()
@@ -77,8 +80,7 @@ class UserController:
 
     def display_users(self):
         users = self.session.query(User).all()
-        for user in users:
-            self.user_view.display_users_view(user)
+        self.user_view.display_users_view(users)
 
     def database(self, database_actions):
         menu_option = self.menu_view.database_menu_options()

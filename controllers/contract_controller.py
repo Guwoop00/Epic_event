@@ -1,13 +1,18 @@
 from models.models import Contract
 from views.contract_view import ContractView
+from views.menu_view import MenuView
 from sqlalchemy.orm import Session
 from datetime import date
+from rich.console import Console
 
 
 class ContractController:
+    console = Console()
+
     def __init__(self, session: Session):
         self.session = session
         self.contract_view = ContractView()
+        self.menu_view = MenuView()
 
     def create_contract(self):
         customer_id, amount_total, amount_due, is_signed = self.contract_view.input_contract_data()
@@ -52,9 +57,20 @@ class ContractController:
         return contract
 
     def display_contracts(self):
-        contracts = self.session.query(Contract).all()
-        for contract in contracts:
-            self.contract_view.display_contracts_view(contract)
+        title, options = self.menu_view.filtered_contact_menu_options()
+        filter_option = self.menu_view.select_choice(title, options)
+        contracts = self.get_filtered_contracts(filter_option)
+        self.contract_view.display_contracts_view(contracts)
+
+    def get_filtered_contracts(self, filter_option):
+        if filter_option == 1:
+            return self.session.query(Contract).filter(Contract.is_signed is False).all()
+        elif filter_option == 2:
+            return self.session.query(Contract).filter(Contract.amount_due > 0).all()
+        elif filter_option == 3:
+            return self.session.query(Contract).filter(Contract.is_signed is True).all()
+        else:
+            return self.session.query(Contract).all()
 
     def get_contract(self, contract_id: int):
         return self.session.query(Contract).filter(Contract.id == contract_id).first()
