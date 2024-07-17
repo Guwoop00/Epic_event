@@ -5,35 +5,29 @@ from rich.table import Table
 class CustomerView:
     console = Console()
 
-    def input_customer_data(self):
+    def get_create_customer_prompts(self):
         self.console.print("\n[bold yellow]Créer un nouveau client[/bold yellow]\n")
-        full_name = input("Nom complet: ")
-        email = input("Email: ")
-        phone = input("Téléphone: ")
-        company_name = input("Nom de l'entreprise: ")
-        return full_name, email, phone, company_name
+        prompts = {
+            "full_name": "Nom complet: ",
+            "email": "Email: ",
+            "phone": "Téléphone: ",
+            "company_name": "Nom de l'entreprise: "
+        }
+        return prompts
 
-    def input_update_customer_data(self):
+    def get_update_customer_prompts(self):
         self.console.print("\n[bold yellow]Mettre à jour le client[/bold yellow]\n")
-        full_name = input("Nom complet (laisser vide pour ne pas changer): ")
-        email = input("Email (laisser vide pour ne pas changer): ")
-        phone = input("Téléphone (laisser vide pour ne pas changer): ")
-        company_name = input("Nom de l'entreprise (laisser vide pour ne pas changer): ")
-
-        customer_data = {}
-        if full_name:
-            customer_data['full_name'] = full_name
-        if email:
-            customer_data['email'] = email
-        if phone:
-            customer_data['phone'] = phone
-        if company_name:
-            customer_data['company_name'] = company_name
-
-        return customer_data
+        prompts = {
+            "full_name": "Nom complet (laisser vide pour ne pas changer): ",
+            "email": "Email (laisser vide pour ne pas changer): ",
+            "phone": "Téléphone (laisser vide pour ne pas changer): ",
+            "company_name": "Nom de l'entreprise (laisser vide pour ne pas changer): "
+        }
+        return prompts
 
     def input_customer_id(self):
-        customer_id = int(input("\nEntrez l'ID du client: \n"))
+        self.console.print("\n[bold yellow]Entrez l'ID du client:[/bold yellow]\n")
+        customer_id = int(input("ID: "))
         return customer_id
 
     def display_customers_view(self, customers):
@@ -57,3 +51,12 @@ class CustomerView:
             )
 
         self.console.print(table)
+
+    def customer_created(self):
+        self.console.print("\n[bold green]Client créé avec succès.[/bold green]\n")
+
+    def customer_updated(self):
+        self.console.print("\n[bold green]Client mis à jour avec succès.[/bold green]\n")
+
+    def customer_not_found(self):
+        self.console.print("\n[bold red]Client non trouvé.[/bold red]\n")

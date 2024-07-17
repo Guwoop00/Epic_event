@@ -1,76 +1,163 @@
+import sentry_sdk
 from models.models import Contract
-from views.contract_view import ContractView
-from views.menu_view import MenuView
 from sqlalchemy.orm import Session
+from views.contract_view import ContractView
+from utils.validators import DataValidator
+from typing import Optional, List
 from datetime import date
-from rich.console import Console
 
 
 class ContractController:
-    console = Console()
 
     def __init__(self, session: Session):
+        """
+        Initializes the contract controller.
+
+        :param session: SQLAlchemy Session
+        """
         self.session = session
         self.contract_view = ContractView()
-        self.menu_view = MenuView()
+        self.validators = DataValidator(session)
 
-    def create_contract(self):
-        customer_id, amount_total, amount_due, is_signed = self.contract_view.input_contract_data()
+    def create_contract(self) -> Optional[Contract]:
+        """
+        Creates a new contract.
 
-        contract = Contract(
-            customer_id=customer_id,
-            amount_total=amount_total,
-            amount_due=amount_due,
-            creation_date=date.today(),
-            is_signed=is_signed,
-        )
+        :return: The created contract
+        """
+        try:
+            prompts = self.contract_view.get_create_user_prompts()
+            customer_id = self.validators.validate_input(prompts["customer_id"],
+                                                         self.validators.validate_existing_customer_id)
+            amount_total = self.validators.validate_input(prompts["amount_total"],
+                                                          self.validators.validate_amount_total)
+            amount_due = self.validators.validate_input(prompts["amount_due"], self.validators.validate_amount_due)
+            is_signed = self.validators.validate_input(prompts["is_signed"], self.validators.validate_boolean)
 
-        self.session.add(contract)
-        self.session.commit()
-        self.session.refresh(contract)
-        print("Contrat créé avec succès.")
-        return contract
+            contract = Contract(
+                customer_id=customer_id,
+                amount_total=amount_total,
+                amount_due=amount_due,
+                creation_date=date.today(),
+                is_signed=is_signed,
+            )
 
-    def update_contract(self):
-        contract_id = self.contract_view.input_contract_id()
-        contract = self.get_contract(contract_id)
-        if contract:
-            contract_data = self.contract_view.input_update_contract_data()
-            for key, value in contract_data.items():
-                setattr(contract, key, value)
+            self.session.add(contract)
             self.session.commit()
             self.session.refresh(contract)
-            print("Contrat mis à jour avec succès.")
-        else:
-            print("Contrat non trouvé.")
-        return contract
+            self.contract_view.contract_created()
+            return contract
 
-    def delete_contract(self):
-        contract_id = self.contract_view.input_contract_id()
-        contract = self.get_contract(contract_id)
-        if contract:
-            self.session.delete(contract)
-            self.session.commit()
-            print("Contrat supprimé avec succès.")
-        else:
-            print("Contrat non trouvé.")
-        return contract
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None
+
+    def update_contract(self) -> Optional[Contract]:
+        """
+        Updates an existing contract.
+
+        :return: The updated contract or None if not found
+        """
+        try:
+            contract_id = self.contract_view.input_contract_id()
+            contract = self.get_contract(contract_id)
+            if contract:
+                prompts = self.contract_view.get_update_user_prompts()
+                customer_id = self.validators.validate_input(prompts["customer_id"],
+                                                             self.validators.validate_existing_customer_id,
+                                                             allow_empty=True)
+                amount_total = self.validators.validate_input(prompts["amount_total"],
+                                                              self.validators.validate_amount_total, allow_empty=True)
+                amount_due = self.validators.validate_input(prompts["amount_due"],
+                                                            self.validators.validate_amount_due, allow_empty=True)
+                is_signed = self.validators.validate_input(prompts["is_signed"],
+                                                           self.validators.validate_boolean, allow_empty=True)
+
+                if customer_id:
+                    contract.customer_id = customer_id
+                if amount_total:
+                    contract.amount_total = amount_total
+                if amount_due:
+                    contract.amount_due = amount_due
+                if is_signed:
+                    contract.is_signed = is_signed
+
+                self.session.commit()
+                self.session.refresh(contract)
+                self.contract_view.contract_updated()
+            else:
+                self.contract_view.contract_not_found()
+            return contract
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None
+
+    def delete_contract(self) -> Optional[Contract]:
+        """
+        Deletes an existing contract.
+
+        :return: The deleted contract or None if not found
+        """
+        try:
+            contract_id = self.contract_view.input_contract_id()
+            contract = self.get_contract(contract_id)
+            if contract:
+                self.session.delete(contract)
+                self.session.commit()
+                self.contract_view.contract_deleted()
+            else:
+                self.contract_view.contract_not_found()
+            return contract
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None
 
     def display_contracts(self):
-        title, options = self.menu_view.filtered_contact_menu_options()
-        filter_option = self.menu_view.select_choice(title, options)
-        contracts = self.get_filtered_contracts(filter_option)
-        self.contract_view.display_contracts_view(contracts)
+        """
+        Display filtered contracts.
+        """
+        try:
+            title, options = self.menu_view.filtered_contact_menu_options()
+            filter_option = self.menu_view.select_choice(title, options)
+            contracts = self.get_filtered_contracts(filter_option)
+            self.contract_view.display_contracts_view(contracts)
 
-    def get_filtered_contracts(self, filter_option):
-        if filter_option == 1:
-            return self.session.query(Contract).filter(Contract.is_signed is False).all()
-        elif filter_option == 2:
-            return self.session.query(Contract).filter(Contract.amount_due > 0).all()
-        elif filter_option == 3:
-            return self.session.query(Contract).filter(Contract.is_signed is True).all()
-        else:
-            return self.session.query(Contract).all()
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
 
-    def get_contract(self, contract_id: int):
-        return self.session.query(Contract).filter(Contract.id == contract_id).first()
+    def get_filtered_contracts(self, filter_option: int) -> List[Contract]:
+        """
+        Get filtered contracts.
+
+        :param filter_option: Filter option choosen.
+        :return: Filtered contracts.
+        """
+        try:
+            if filter_option == 1:
+                return self.session.query(Contract).filter(Contract.is_signed.is_(False)).all()
+            elif filter_option == 2:
+                return self.session.query(Contract).filter(Contract.amount_due > 0).all()
+            elif filter_option == 3:
+                return self.session.query(Contract).filter(Contract.is_signed.is_(True)).all()
+            else:
+                return self.session.query(Contract).all()
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None
+
+    def get_contract(self, contract_id: int) -> Optional[Contract]:
+        """
+        Obtient un contrat par son ID.
+
+        :param contract_id: L'ID du contrat
+        :return: Le contrat ou None si non trouvé
+        """
+        try:
+            return self.session.query(Contract).filter(Contract.id == contract_id).first()
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None

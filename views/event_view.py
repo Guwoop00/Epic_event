@@ -5,47 +5,38 @@ from rich.table import Table
 class EventView:
     console = Console()
 
-    def input_event_data(self):
+    def get_create_event_prompts(self):
         self.console.print("\n[bold yellow]Créer un nouvel événement[/bold yellow]\n")
-        event_name = input("Nom de l'évenement: ")
-        contract_id = int(input("ID du contrat: "))
-        event_start_date = input("Date de début de l'événement (YYYY-MM-DD): ")
-        event_end_date = input("Date de fin de l'événement (YYYY-MM-DD): ")
-        location = input("Lieu: ")
-        attendees = int(input("Nombre de participants: "))
-        notes = input("Remarques: ")
-        return event_name, event_start_date, event_end_date, location, attendees, notes, contract_id
+        prompts = {
+            "event_name": "Nom de l'événement: ",
+            "contract_id": "ID du contrat: ",
+            "event_start_date": "Date de début de l'événement (YYYY-MM-DD): ",
+            "event_end_date": "Date de fin de l'événement (YYYY-MM-DD): ",
+            "location": "Lieu: ",
+            "attendees": "Nombre de participants: ",
+            "notes": "Remarques (laisser vide pour ne pas changer): ",
+        }
+        return prompts
 
-    def input_update_event_data(self):
-        self.console.print("\n[bold]Mettre à jour l'événement[/bold yellow]\n")
-        event_start_date = input("Date de début de l'événement (YYYY-MM-DD, laisser vide pour ne pas changer): ")
-        event_end_date = input("Date de fin de l'événement (YYYY-MM-DD, laisser vide pour ne pas changer): ")
-        location = input("Lieu (laisser vide pour ne pas changer): ")
-        attendees = input("Nombre de participants (laisser vide pour ne pas changer): ")
-        notes = input("Remarques (laisser vide pour ne pas changer): ")
-        contract_id = input("ID du contrat (laisser vide pour ne pas changer): ")
-
-        event_data = {}
-        if event_start_date:
-            event_data['event_start_date'] = event_start_date
-        if event_end_date:
-            event_data['event_end_date'] = event_end_date
-        if location:
-            event_data['location'] = location
-        if attendees:
-            event_data['attendees'] = int(attendees)
-        if notes:
-            event_data['notes'] = notes
-        if contract_id:
-            event_data['contract_id'] = int(contract_id)
-
-        return event_data
+    def get_update_event_prompts(self):
+        self.console.print("\n[bold yellow]Mettre à jour l'événement[/bold yellow]\n")
+        prompts = {
+            "event_name": "Nom de l'événement (laisser vide pour ne pas changer): ",
+            "event_start_date": "Date de début de l'événement (YYYY-MM-DD, laisser vide pour ne pas changer): ",
+            "event_end_date": "Date de fin de l'événement (YYYY-MM-DD, laisser vide pour ne pas changer): ",
+            "location": "Lieu (laisser vide pour ne pas changer): ",
+            "attendees": "Nombre de participants (laisser vide pour ne pas changer): ",
+            "notes": "Remarques (laisser vide pour ne pas changer): ",
+            "contract_id": "ID du contrat (laisser vide pour ne pas changer): "
+        }
+        return prompts
 
     def input_event_id(self):
-        event_id = int(input("\nEntrez l'ID de l'événement: \n"))
+        self.console.print("\n[bold yellow]Entrez l'ID de l'événement:[/bold yellow]\n")
+        event_id = int(input("ID: "))
         return event_id
 
-    def display_events_view(self, event):
+    def display_events_view(self, events):
         table = Table(title="Détails de l'événement")
 
         table.add_column("ID de l'événement", header_style="bold cornflower_blue")
@@ -58,16 +49,26 @@ class EventView:
         table.add_column("Participants", header_style="bold cornflower_blue")
         table.add_column("Remarques", header_style="bold cornflower_blue")
 
-        table.add_row(
-            str(event.id),
-            str(event.contract_id),
-            event.contract.customer.full_name,
-            f"{event.contract.customer.email}, {event.contract.customer.phone}",
-            str(event.event_start_date),
-            str(event.event_end_date),
-            event.location,
-            str(event.attendees),
-            event.notes
-        )
+        for event in events:
+            table.add_row(
+                str(event.id),
+                str(event.contract_id),
+                event.contract.customer.full_name,
+                f"{event.contract.customer.email}, {event.contract.customer.phone}",
+                str(event.event_start_date),
+                str(event.event_end_date),
+                event.location,
+                str(event.attendees),
+                event.notes
+            )
 
         self.console.print(table)
+
+    def event_created(self):
+        self.console.print("\n[bold green]Événement créé avec succès.[/bold green]\n")
+
+    def event_updated(self):
+        self.console.print("\n[bold green]Événement mis à jour avec succès.[/bold green]\n")
+
+    def event_not_found(self):
+        self.console.print("\n[bold red]Événement non trouvé.[/bold red]\n")

@@ -11,32 +11,25 @@ class UserView:
         password = input("Mot de passe: ")
         return username, password
 
-    def input_user_data(self):
+    def get_create_user_prompts(self):
         self.console.print("\n[bold yellow]Créer un nouvel utilisateur[/bold yellow]\n")
-        full_name = input("Nom complet: ")
-        email = input("Email: ")
-        password = input("Mot de passe: ")
-        role_id = input("Rôle ID (1: admin, 2: support, 3: sales): ")
-        return full_name, email, password, role_id
+        prompts = {
+            "full_name": "Nom complet: ",
+            "email": "Email: ",
+            "password": "Mot de passe: ",
+            "role_id": "Rôle ID (1: admin, 2: support, 3: sales): "
+        }
+        return prompts
 
-    def input_update_user_data(self):
+    def get_update_user_prompts(self):
         self.console.print("\n[bold yellow]Mettre à jour l'utilisateur[/bold yellow]\n")
-        full_name = input("Nom complet (laisser vide pour ne pas changer): ")
-        email = input("Email (laisser vide pour ne pas changer): ")
-        password = input("Mot de passe (laisser vide pour ne pas changer): ")
-        role_id = input("Rôle ID (1: admin, 2: support, 3: sales) (laisser vide pour ne pas changer): ")
-
-        user_data = {}
-        if full_name:
-            user_data['full_name'] = full_name
-        if email:
-            user_data['email'] = email
-        if password:
-            user_data['password'] = password
-        if role_id:
-            user_data['role_id'] = role_id
-
-        return user_data
+        prompts = {
+            "full_name": "Nom complet (laisser vide pour ne pas changer): ",
+            "email": "Email (laisser vide pour ne pas changer): ",
+            "password": "Mot de passe (laisser vide pour ne pas changer): ",
+            "role_id": "Rôle ID (1: admin, 2: support, 3: sales) (laisser vide pour ne pas changer): "
+        }
+        return prompts
 
     def input_user_id(self):
         self.console.print("\n[bold yellow]Entrez l'ID de l'utilisateur:[/bold yellow]\n")
@@ -66,3 +59,21 @@ class UserView:
 
     def unauthenticated_user_view(self):
         self.console.print("\n[bold red]Utilisateur ou mot de passe incorrect ![/bold red]\n")
+
+    def user_not_found(self):
+        self.console.print("\n[bold red]Utilisateur non trouvé.[/bold red]\n")
+
+    def incorrect_password(self):
+        self.console.print("\n[bold red]Mot de passe incorrect.[/bold red]\n")
+
+    def access_granted(self, token):
+        self.console.print(f"\n[bold cornflower_blue]Token:[/bold cornflower_blue] {token}")
+
+    def user_created(self):
+        self.console.print("\n[bold green]Utilisateur créé avec succès.[/bold green]\n")
+
+    def user_updated(self):
+        self.console.print("\n[bold green]Utilisateur mis à jour avec succès.[/bold green]\n")
+
+    def user_deleted(self):
+        self.console.print("\n[bold green]Utilisateur supprimé avec succès.[/bold green]\n")

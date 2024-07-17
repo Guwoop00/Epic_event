@@ -5,32 +5,25 @@ from rich.table import Table
 class ContractView:
     console = Console()
 
-    def input_contract_data(self):
+    def get_create_contract_prompts(self):
         self.console.print("\n[bold yellow]Créer un nouveau contrat[/bold yellow]\n")
-        customer_id = int(input("ID du client: "))
-        amount_total = float(input("Montant total: "))
-        amount_due = float(input("Montant dû: "))
-        is_signed = input("Signé (oui/non): ").lower() == 'oui'
-        return customer_id, amount_total, amount_due, is_signed
+        prompts = {
+            "customer_id": "ID du client: ",
+            "amount_total": "Montant total: ",
+            "amount_due": "Montant dû: ",
+            "is_signed": "Signé (oui/non): "
+        }
+        return prompts
 
-    def input_update_contract_data(self):
+    def get_update_contract_prompts(self):
         self.console.print("\n[bold yellow]Mettre à jour le contrat[/bold yellow]\n")
-        customer_id = input("ID du client (laisser vide pour ne pas changer): ")
-        amount_total = input("Montant total (laisser vide pour ne pas changer): ")
-        amount_due = input("Montant dû (laisser vide pour ne pas changer): ")
-        is_signed = input("Signé (laisser vide pour ne pas changer): ")
-
-        contract_data = {}
-        if customer_id:
-            contract_data['customer_id'] = int(customer_id)
-        if amount_total:
-            contract_data['amount_total'] = float(amount_total)
-        if amount_due:
-            contract_data['amount_due'] = float(amount_due)
-        if is_signed:
-            contract_data['is_signed'] = is_signed.lower() == 'oui'
-
-        return contract_data
+        prompts = {
+            "customer_id": "ID du client (laisser vide pour ne pas changer): ",
+            "amount_total": "Montant total (laisser vide pour ne pas changer): ",
+            "amount_due": "Montant dû (laisser vide pour ne pas changer): ",
+            "is_signed": "Signé (laisser vide pour ne pas changer): "
+        }
+        return prompts
 
     def input_contract_id(self):
         contract_id = int(input("\nEntrez l'ID du contrat: \n"))
@@ -57,3 +50,15 @@ class ContractView:
             )
 
         self.console.print(table)
+
+    def contract_created(self):
+        self.console.print("\n[bold green]Contrat créé avec succès.[/bold green]\n")
+
+    def contract_updated(self):
+        self.console.print("\n[bold green]Contrat mis à jour avec succès.[/bold green]\n")
+
+    def contract_deleted(self):
+        self.console.print("\n[bold green]Contrat supprimé avec succès.[/bold green]\n")
+
+    def contract_not_found(self):
+        self.console.print("\n[bold red]Contrat non trouvé.[/bold red]\n")
