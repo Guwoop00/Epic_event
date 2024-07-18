@@ -1,5 +1,4 @@
 from rich.console import Console
-from rich.table import Table
 
 
 class UserView:
@@ -31,28 +30,11 @@ class UserView:
         }
         return prompts
 
-    def input_user_id(self):
-        self.console.print("\n[bold yellow]Entrez l'ID de l'utilisateur:[/bold yellow]\n")
-        user_id = int(input("ID: "))
-        return user_id
-
-    def display_users_view(self, users):
-        table = Table(title="\n[bold yellow underline]Détails de l'utilisateur[/bold yellow underline]\n")
-
-        table.add_column("ID de l'utilisateur", header_style="bold cornflower_blue")
-        table.add_column("Nom complet", header_style="bold cornflower_blue")
-        table.add_column("Email", header_style="bold cornflower_blue")
-        table.add_column("Rôle", header_style="bold cornflower_blue")
-
-        for user in users:
-            table.add_row(
-                str(user.id),
-                user.full_name,
-                user.email,
-                user.role.name
-            )
-
-        self.console.print(table)
+    def user_view_prompts(self):
+        prompts = {
+            "user_id": "ID: "
+        }
+        return prompts
 
     def authenticated_user_view(self):
         self.console.print("\n[bold green]Connexion réussie ![/bold green]\n")

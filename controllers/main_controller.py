@@ -36,39 +36,44 @@ class MainController:
             1: self.main_menu,
             2: exit
         }
-        self.sales_actions = {
-            1: self.customer_controller.create_customer,
-            2: self.customer_controller.update_customer,
-            3: self.event_controller.create_event,
-            4: self.contract_controller.update_contract,
-            5: self.contract_controller.display_contracts,
-            6: lambda: self.user_controller.database(self.database_actions),
-            7: self.user_controller.logout
-        }
-        self.support_actions = {
-            1: self.event_controller.display_events,
-            2: self.event_controller.update_event,
-            3: lambda: self.user_controller.database(self.database_actions),
-            4: self.user_controller.logout
-        }
-        self.admin_actions = {
-            1: self.user_controller.create_user,
-            2: self.user_controller.update_user,
-            3: self.user_controller.delete_user,
-            4: self.contract_controller.create_contract,
-            5: self.contract_controller.delete_contract,
-            6: self.event_controller.display_events,
-            7: self.add_support_to_event,
-            8: lambda: self.user_controller.database(self.database_actions),
-            9: self.user_controller.logout
-        }
         self.database_actions = {
-            1: self.user_controller.display_users,
-            2: self.customer_controller.display_customers,
-            3: self.contract_controller.display_contracts,
-            4: self.event_controller.display_events,
-            5: exit
+            1: self.customer_controller.display_customers,
+            2: self.contract_controller.display_all_contracts,
+            3: self.event_controller.display_all_events,
+            4: self.main_menu,
         }
+
+    def build_action_map(self, role: str, user) -> dict:
+        if role == 'admin':
+            return {
+                1: self.user_controller.create_user,
+                2: self.user_controller.update_user,
+                3: self.user_controller.delete_user,
+                4: self.contract_controller.create_contract,
+                5: lambda: self.event_controller.display_events(user),
+                6: self.event_controller.add_support_to_event,
+                7: lambda: self.user_controller.database(self.database_actions),
+                8: self.user_controller.logout
+            }
+        elif role == 'support':
+            return {
+                1: lambda: self.event_controller.display_events(user),
+                2: self.event_controller.update_event,
+                3: lambda: self.user_controller.database(self.database_actions),
+                4: self.user_controller.logout
+            }
+        elif role == 'sales':
+            return {
+                1: lambda: self.customer_controller.create_customer(user),
+                2: self.customer_controller.update_customer,
+                3: self.event_controller.create_event,
+                4: self.contract_controller.update_contract,
+                5: self.contract_controller.display_contracts,
+                6: lambda: self.user_controller.database(self.database_actions),
+                7: self.user_controller.logout
+            }
+
+        return {}
 
     def login_menu(self) -> None:
         """
@@ -98,24 +103,13 @@ class MainController:
                     self.user_view.authenticated_user_view()
                     role = user.role.name.lower()
                     menu_method_name = f"{role}_menu_options"
-                    action_map_name = f"{role}_actions"
                     menu_option = getattr(self.menu_view, menu_method_name)()
-                    action_map = getattr(self, action_map_name)
+
+                    action_map = self.build_action_map(role, user)
                     self.menu_view.display_menu(menu_option, action_map)
                 else:
                     self.user_view.unauthenticated_user_view()
                     self.login_menu()
-
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-            self.console.print(f"An error occurred: {e}")
-
-    def add_support_to_event(self) -> None:
-        """
-        Adds support to an event (functionality to be implemented).
-        """
-        try:
-            print("add support to event mode OK")
 
         except Exception as e:
             sentry_sdk.capture_exception(e)

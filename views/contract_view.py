@@ -51,6 +51,12 @@ class ContractView:
 
         self.console.print(table)
 
+    def contract_view_prompts(self):
+        prompts = {
+            "contract_id": "ID: "
+        }
+        return prompts
+
     def contract_created(self):
         self.console.print("\n[bold green]Contrat créé avec succès.[/bold green]\n")
 

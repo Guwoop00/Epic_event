@@ -2,6 +2,7 @@ import sentry_sdk
 from models.models import Contract
 from sqlalchemy.orm import Session
 from views.contract_view import ContractView
+from views.menu_view import MenuView
 from utils.validators import DataValidator
 from typing import Optional, List
 from datetime import date
@@ -17,6 +18,7 @@ class ContractController:
         """
         self.session = session
         self.contract_view = ContractView()
+        self.menu_view = MenuView()
         self.validators = DataValidator(session)
 
     def create_contract(self) -> Optional[Contract]:
@@ -26,7 +28,8 @@ class ContractController:
         :return: The created contract
         """
         try:
-            prompts = self.contract_view.get_create_user_prompts()
+            prompts = self.contract_view.get_create_contract_prompts()
+
             customer_id = self.validators.validate_input(prompts["customer_id"],
                                                          self.validators.validate_existing_customer_id)
             amount_total = self.validators.validate_input(prompts["amount_total"],
@@ -59,7 +62,10 @@ class ContractController:
         :return: The updated contract or None if not found
         """
         try:
-            contract_id = self.contract_view.input_contract_id()
+            prompts = self.contract_view.contract_view_prompts()
+
+            contract_id = self.validators.validate_input(prompts["contract_id"],
+                                                         self.validators.validate_existing_contract_id)
             contract = self.get_contract(contract_id)
             if contract:
                 prompts = self.contract_view.get_update_user_prompts()
@@ -93,33 +99,12 @@ class ContractController:
             sentry_sdk.capture_exception(e)
             return None
 
-    def delete_contract(self) -> Optional[Contract]:
-        """
-        Deletes an existing contract.
-
-        :return: The deleted contract or None if not found
-        """
-        try:
-            contract_id = self.contract_view.input_contract_id()
-            contract = self.get_contract(contract_id)
-            if contract:
-                self.session.delete(contract)
-                self.session.commit()
-                self.contract_view.contract_deleted()
-            else:
-                self.contract_view.contract_not_found()
-            return contract
-
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-            return None
-
     def display_contracts(self):
         """
         Display filtered contracts.
         """
         try:
-            title, options = self.menu_view.filtered_contact_menu_options()
+            title, options = self.menu_view.filtered_contracts_menu_options()
             filter_option = self.menu_view.select_choice(title, options)
             contracts = self.get_filtered_contracts(filter_option)
             self.contract_view.display_contracts_view(contracts)
@@ -157,6 +142,15 @@ class ContractController:
         """
         try:
             return self.session.query(Contract).filter(Contract.id == contract_id).first()
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None
+
+    def display_all_contracts(self):
+        try:
+            contracts = self.session.query(Contract).all()
+            self.contract_view.display_contracts_view(contracts)
 
         except Exception as e:
             sentry_sdk.capture_exception(e)

@@ -31,11 +31,6 @@ class EventView:
         }
         return prompts
 
-    def input_event_id(self):
-        self.console.print("\n[bold yellow]Entrez l'ID de l'événement:[/bold yellow]\n")
-        event_id = int(input("ID: "))
-        return event_id
-
     def display_events_view(self, events):
         table = Table(title="Détails de l'événement")
 
@@ -48,6 +43,7 @@ class EventView:
         table.add_column("Lieu", header_style="bold cornflower_blue")
         table.add_column("Participants", header_style="bold cornflower_blue")
         table.add_column("Remarques", header_style="bold cornflower_blue")
+        table.add_column("Nom du support", header_style="bold cornflower_blue")
 
         for event in events:
             table.add_row(
@@ -59,10 +55,18 @@ class EventView:
                 str(event.event_end_date),
                 event.location,
                 str(event.attendees),
-                event.notes
+                event.notes,
+                str(event.support_contact.full_name)
             )
 
         self.console.print(table)
+
+    def event_view_prompts(self):
+        prompts = {
+            "event_id": "ID: ",
+            "support_contact_id": "Support contact ID : "
+        }
+        return prompts
 
     def event_created(self):
         self.console.print("\n[bold green]Événement créé avec succès.[/bold green]\n")

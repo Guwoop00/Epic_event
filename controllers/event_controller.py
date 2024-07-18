@@ -2,12 +2,16 @@ import sentry_sdk
 from models.models import Event
 from views.event_view import EventView
 from views.menu_view import MenuView
+from utils.validators import DataValidator
 from sqlalchemy.orm import Session
 from datetime import date
 from typing import List, Optional
+from rich.console import Console
 
 
 class EventController:
+    console = Console()
+
     def __init__(self, session: Session):
         """
         Initializes the event controller.
@@ -17,6 +21,7 @@ class EventController:
         self.session = session
         self.event_view = EventView()
         self.menu_view = MenuView()
+        self.validators = DataValidator(session)
 
     def create_event(self) -> Event:
         """
@@ -63,7 +68,9 @@ class EventController:
         :return: The updated event or None if not found
         """
         try:
-            event_id = self.event_view.input_event_id()
+            prompts = self.event_view.event_view_prompts()
+
+            event_id = self.validators.validate_input(prompts["event_id"], self.validators.validate_existing_event_id)
             event = self.get_event(event_id)
 
             if event:
@@ -123,20 +130,38 @@ class EventController:
             sentry_sdk.capture_exception(e)
             return None
 
-    def display_events(self):
+    def display_all_events(self):
+        try:
+            events = self.session.query(Event).all()
+            self.event_view.display_events_view(events)
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None
+
+    def display_events(self, user):
         """
-        Displays the list of events.
+        Displays the list of events based on the user's role.
+
+        :param user: The current user.
         """
         try:
-            title, options = self.menu_view.filtered_event_menu_options()
-            filter_option = self.menu_view.select_choice(title, options)
-            events = self.get_filtered_events(filter_option)
+            if user.role.name.lower() == 'admin':
+                title, options = self.menu_view.filtered_event_admin_menu_options()
+                filter_option = self.menu_view.select_choice(title, options)
+                events = self.get_admin_filtered_events(filter_option)
+
+            elif user.role.name.lower() == 'support':
+                title, options = self.menu_view.filtered_event_support_menu_options()
+                filter_option = self.menu_view.select_choice(title, options)
+                events = self.get_support_filtered_events(filter_option, user)
+
             self.event_view.display_events_view(events)
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
 
-    def get_filtered_events(self, filter_option: int) -> List[Event]:
+    def get_admin_filtered_events(self, filter_option: int) -> List[Event]:
         """
         Get filtered events by choosen option.
 
@@ -156,3 +181,48 @@ class EventController:
         except Exception as e:
             sentry_sdk.capture_exception(e)
             return None
+
+    def get_support_filtered_events(self, filter_option: int, user) -> List[Event]:
+        """
+        Get filtered events by choosen option.
+
+        :param filter_option: Filter option choosen.
+        :return: Filtered events list.
+        """
+        try:
+            if filter_option == 1:
+                return self.session.query(Event).filter(Event.support_contact_id == user.id).all()
+            else:
+                return self.session.query(Event).all()
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return None
+
+    def add_support_to_event(self) -> None:
+        """
+        Adds support to an event.
+        """
+        try:
+            prompts = self.event_view.event_view_prompts()
+            event_id = self.validators.validate_input(prompts["event_id"], self.validators.validate_existing_event_id)
+            event = self.get_event(event_id)
+
+            if event:
+                support_id = self.validators.validate_input(prompts["support_contact_id"],
+                                                            self.validators.validate_add_support_to_event)
+
+                if support_id is not None:
+                    event.support_contact_id = support_id
+                    self.session.commit()
+                    self.session.refresh(event)
+                    self.event_view.event_updated()
+                else:
+                    self.console.print("[bold red]Validation failed. Support contact not added.[/bold red]")
+            else:
+                self.event_view.event_not_found()
+            return event
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            self.console.print(f"An error occurred: {e}")

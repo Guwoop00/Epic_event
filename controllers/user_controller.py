@@ -91,6 +91,7 @@ class UserController:
         :return: The created user
         """
         try:
+
             prompts = self.user_view.get_create_user_prompts()
 
             full_name = self.validators.validate_input(prompts["full_name"], self.validators.validate_str)
@@ -123,7 +124,9 @@ class UserController:
         :return: The updated user or None if not found
         """
         try:
-            user_id = self.user_view.input_user_id()
+            prompts = self.user_view.user_view_prompts()
+
+            user_id = self.validators.validate_input(prompts["user_id"], self.validators.validate_existing_user_id)
             user = self.get_user(user_id)
 
             if user:
@@ -165,7 +168,9 @@ class UserController:
         :return: The deleted user or None if not found
         """
         try:
-            user_id = self.user_view.input_user_id()
+            prompts = self.user_view.user_view_prompts()
+
+            user_id = self.validators.validate_input(prompts["user_id"], self.validators.validate_existing_user_id)
             user = self.get_user(user_id)
             if user:
                 self.session.delete(user)
@@ -178,17 +183,6 @@ class UserController:
         except Exception as e:
             sentry_sdk.capture_exception(e)
             return None
-
-    def display_users(self) -> None:
-        """
-        Displays the list of users.
-        """
-        try:
-            users = self.session.query(User).all()
-            self.user_view.display_users_view(users)
-
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
 
     def database(self, database_actions: Dict[int, Callable]) -> None:
         """

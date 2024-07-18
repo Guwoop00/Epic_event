@@ -52,6 +52,12 @@ class CustomerView:
 
         self.console.print(table)
 
+    def customer_view_prompts(self):
+        prompts = {
+            "customer_id": "ID: "
+        }
+        return prompts
+
     def customer_created(self):
         self.console.print("\n[bold green]Client créé avec succès.[/bold green]\n")
 

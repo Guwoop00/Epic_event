@@ -47,11 +47,10 @@ class MenuView:
     def database_menu_options():
         title = "Base de données"
         options = [
-            "Afficher les utilisateurs",
             "Afficher les clients",
             "Afficher les contrats",
             "Afficher les événements",
-            "Quitter l'app"
+            "Menu principal"
         ]
         return title, options
 
@@ -70,7 +69,7 @@ class MenuView:
     @staticmethod
     def support_menu_options():
         title = "Menu Support"
-        options = ["Afficher les evenements",
+        options = ["Filtrer les evenements",
                    "Database [Read Only]",
                    "Log out"]
         return title, options
@@ -83,17 +82,16 @@ class MenuView:
             "Modifier un collaborateur",
             "Suprimer un collaborateur",
             "Créer un contrat",
-            "Supprimer un contrat",
             "Filtrer les évenements",
-            "Assigner un évenement à un support",
+            "Assigner un support à un évenement",
             "Database [Read Only]",
             "Se déconnecter"
         ]
         return title, options
 
     @staticmethod
-    def filtered_contact_menu_options():
-        title = "Contacts filter"
+    def filtered_contracts_menu_options():
+        title = "Contracts filter"
         options = [
             "Contrats non signés",
             "Contrats impayés",
@@ -103,12 +101,21 @@ class MenuView:
         return title, options
 
     @staticmethod
-    def filtered_event_menu_options():
+    def filtered_event_admin_menu_options():
         title = "Filtrer les événements"
         options = [
             "Événements sans support",
             "Événements à venir",
             "Événements passés",
+            "Tous les événements"
+        ]
+        return title, options
+
+    @staticmethod
+    def filtered_event_support_menu_options():
+        title = "Filtrer les événements"
+        options = [
+            "Mes événements",
             "Tous les événements"
         ]
         return title, options

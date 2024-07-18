@@ -3,6 +3,7 @@ from models.models import Customer
 from views.customer_view import CustomerView
 from sqlalchemy.orm import Session
 from datetime import date
+from utils.validators import DataValidator
 
 
 class CustomerController:
@@ -15,8 +16,9 @@ class CustomerController:
         """
         self.session = session
         self.customer_view = CustomerView()
+        self.validators = DataValidator(session)
 
-    def create_customer(self):
+    def create_customer(self, user):
         """
         Creates a new customer.
 
@@ -37,7 +39,7 @@ class CustomerController:
                 phone=phone,
                 company_name=company_name,
                 creation_date=creation_date,
-                sales_contact_id=1,
+                sales_contact_id=user.id,
             )
 
             self.session.add(customer)
@@ -57,7 +59,10 @@ class CustomerController:
         :return: The updated customer or None if not found
         """
         try:
-            customer_id = self.customer_view.input_customer_id()
+            prompts = self.customer_view.customer_view_prompts()
+
+            customer_id = self.validators.validate_input(prompts["customer_id"],
+                                                         self.validators.validate_existing_customer_id)
             customer = self.get_customer(customer_id)
 
             if customer:

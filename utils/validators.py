@@ -1,7 +1,7 @@
 import re
 from rich.console import Console
 from datetime import datetime
-from models.models import User, Role, Customer
+from models.models import User, Role, Customer, Event, Contract
 
 
 class DataValidator:
@@ -17,6 +17,58 @@ class DataValidator:
                 return None
             if validation_method(value):
                 return value
+
+    def validate_id(self, value: int) -> bool:
+        roles = self.session.query(Role).all()
+        valid_ids = [role.id for role in roles]
+
+        if value in valid_ids:
+            return True
+        role_details = ', '.join([f"{role.id}: {role.name} " for role in roles])
+        self.console.print(f"[bold red]Veuillez choisir un ID parmi les suivants : {role_details}.[/bold red]")
+        return False
+
+    def validate_existing_user_id(self, value: int) -> bool:
+        user = self.session.query(User).filter(User.id == value).first()
+        if user:
+            return True
+        DataValidator.console.print("[bold red]ID d'utilisateur non trouvé.[/bold red]")
+        return False
+
+    def validate_existing_contract_id(self, value: int) -> bool:
+        contract = self.session.query(Contract).filter(Contract.id == value).first()
+        if contract:
+            return True
+        DataValidator.console.print("[bold red]ID de contrat non trouvé.[/bold red]")
+        return False
+
+    def validate_existing_customer_id(self, value: int) -> bool:
+        customer = self.session.query(Customer).filter(Customer.id == value).first()
+        if customer:
+            return True
+        DataValidator.console.print("[bold red]ID d'utilisateur non trouvé.[/bold red]")
+        return False
+
+    def validate_existing_event_id(self, value: int) -> bool:
+        event = self.session.query(Event).filter(Event.id == value).first()
+        if event:
+            return True
+        DataValidator.console.print("[bold red]ID d'évenement non trouvé.[/bold red]")
+        return False
+
+    def validate_existing_role_id(self, value: int) -> bool:
+        role = self.session.query(Role).filter(Role.id == value).first()
+        if role:
+            return True
+        DataValidator.console.print("[bold red]ID de role non trouvé.[/bold red]")
+        return False
+
+    def validate_add_support_to_event(self, value: int) -> bool:
+        user = self.session.query(User).filter(User.id == value).first()
+        if user and user.role_id == 2:
+            return True
+        DataValidator.console.print("[bold red]Utilisateur non trouvé ou n'est pas un support.[/bold red]")
+        return False
 
     @staticmethod
     def validate_password(password: str) -> bool:
@@ -57,35 +109,11 @@ class DataValidator:
         DataValidator.console.print("[bold red]Numéro de téléphone non valide.[/bold red]")
         return False
 
-    def validate_id(self, value: int) -> bool:
-        roles = self.session.query(Role).all()
-        valid_ids = [role.id for role in roles]
-
-        if value in valid_ids:
-            return True
-        role_details = ', '.join([f"{role.id}: {role.name} " for role in roles])
-        self.console.print(f"[bold red]Veuillez choisir un ID parmi les suivants : {role_details}.[/bold red]")
-        return False
-
     @staticmethod
     def validate_attendees(value: int) -> bool:
         if isinstance(value, int) and value >= 0:
             return True
         DataValidator.console.print("[bold red] Nombre de participants non valide.[/bold red]")
-        return False
-
-    @staticmethod
-    def validate_existing_user_id(value: int, session) -> bool:
-        if session.query(User).filter(User.id == value).first():
-            return True
-        DataValidator.console.print("[bold red]ID d'utilisateur non trouvé.[/bold red]")
-        return False
-
-    @staticmethod
-    def validate_role_id(value: int, session) -> bool:
-        if session.query(Role).filter(Role.id == value).first():
-            return True
-        DataValidator.console.print("[bold red]ID de département non trouvé.[/bold red]")
         return False
 
     @staticmethod
@@ -116,11 +144,4 @@ class DataValidator:
         if value.lower() in ["true", "false"]:
             return True
         print("[bold red]Merci de choisir parmis 'True' or 'False'.[/bold red]")
-        return False
-
-    @staticmethod
-    def validate_existing_customer_id(value: int, session) -> bool:
-        if session.query(Customer).filter(Customer.id == value).first():
-            return True
-        DataValidator.console.print("[bold red]ID de client non trouvé.[/bold red]")
         return False
