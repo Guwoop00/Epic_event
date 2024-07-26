@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 from typing import List, Optional
 from rich.console import Console
+from utils.jwtoken import TokenManager
 
 
 class EventController:
@@ -15,19 +16,17 @@ class EventController:
     def __init__(self, session: Session):
         """
         Initializes the event controller.
-
-        :param session: SQLAlchemy Session
         """
         self.session = session
         self.event_view = EventView()
         self.menu_view = MenuView()
         self.validators = DataValidator(session)
+        self.token_manager = TokenManager()
 
-    def create_event(self) -> Event:
+    @TokenManager.token_required
+    def create_event(self, user) -> Event:
         """
         Creates a new event.
-
-        :return: The created event
         """
         try:
             prompts = self.event_view.get_create_event_prompts()
@@ -38,7 +37,7 @@ class EventController:
                                                               self.validators.validate_date)
             event_end_date = self.validators.validate_input(prompts["event_end_date"], self.validators.validate_date)
             location = self.validators.validate_input(prompts["location"], self.validators.validate_str)
-            attendees = self.validators.validate_input(prompts["attendees"], self.validators.validate_int)
+            attendees = self.validators.validate_input(prompts["attendees"], self.validators.validate_attendees)
             notes = self.validators.validate_input(prompts["notes"], self.validators.validate_str, allow_empty=True)
 
             event = Event(
@@ -61,21 +60,18 @@ class EventController:
             sentry_sdk.capture_exception(e)
         return None
 
-    def update_event(self) -> Optional[Event]:
+    @TokenManager.token_required
+    def update_event(self, user) -> Optional[Event]:
         """
         Updates an existing event.
-
-        :return: The updated event or None if not found
         """
         try:
             prompts = self.event_view.event_view_prompts()
-
             event_id = self.validators.validate_input(prompts["event_id"], self.validators.validate_existing_event_id)
             event = self.get_event(event_id)
 
             if event:
                 prompts = self.event_view.get_update_event_prompts()
-
                 event_name = self.validators.validate_input(prompts["event_name"],
                                                             self.validators.validate_str, allow_empty=True)
                 event_start_date = self.validators.validate_input(prompts["event_start_date"],
@@ -114,14 +110,10 @@ class EventController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-        return None
 
     def get_event(self, event_id: int) -> Optional[Event]:
         """
         Retrieves an event by its ID.
-
-        :param event_id: Event ID
-        :return: Event or None
         """
         try:
             return self.session.query(Event).filter(Event.id == event_id).first()
@@ -131,19 +123,20 @@ class EventController:
             return None
 
     def display_all_events(self):
+        """
+        Displays all events.
+        """
         try:
             events = self.session.query(Event).all()
             self.event_view.display_events_view(events)
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
+    @TokenManager.token_required
     def display_events(self, user):
         """
         Displays the list of events based on the user's role.
-
-        :param user: The current user.
         """
         try:
             if user.role.name.lower() == 'admin':
@@ -164,9 +157,6 @@ class EventController:
     def get_admin_filtered_events(self, filter_option: int) -> List[Event]:
         """
         Get filtered events by choosen option.
-
-        :param filter_option: Filter option choosen.
-        :return: Filtered events list.
         """
         try:
             if filter_option == 1:
@@ -180,14 +170,10 @@ class EventController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
     def get_support_filtered_events(self, filter_option: int, user) -> List[Event]:
         """
         Get filtered events by choosen option.
-
-        :param filter_option: Filter option choosen.
-        :return: Filtered events list.
         """
         try:
             if filter_option == 1:
@@ -197,9 +183,9 @@ class EventController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
-    def add_support_to_event(self) -> None:
+    @TokenManager.token_required
+    def add_support_to_event(self, user) -> None:
         """
         Adds support to an event.
         """
@@ -212,7 +198,7 @@ class EventController:
                 support_id = self.validators.validate_input(prompts["support_contact_id"],
                                                             self.validators.validate_add_support_to_event)
 
-                if support_id is not None:
+                if support_id:
                     event.support_contact_id = support_id
                     self.session.commit()
                     self.session.refresh(event)
@@ -225,4 +211,3 @@ class EventController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            self.console.print(f"An error occurred: {e}")

@@ -6,6 +6,7 @@ from views.menu_view import MenuView
 from utils.validators import DataValidator
 from typing import Optional, List
 from datetime import date
+from utils.jwtoken import TokenManager
 
 
 class ContractController:
@@ -13,23 +14,20 @@ class ContractController:
     def __init__(self, session: Session):
         """
         Initializes the contract controller.
-
-        :param session: SQLAlchemy Session
         """
         self.session = session
         self.contract_view = ContractView()
         self.menu_view = MenuView()
         self.validators = DataValidator(session)
+        self.token_manager = TokenManager()
 
-    def create_contract(self) -> Optional[Contract]:
+    @TokenManager.token_required
+    def create_contract(self, user) -> Optional[Contract]:
         """
         Creates a new contract.
-
-        :return: The created contract
         """
         try:
             prompts = self.contract_view.get_create_contract_prompts()
-
             customer_id = self.validators.validate_input(prompts["customer_id"],
                                                          self.validators.validate_existing_customer_id)
             amount_total = self.validators.validate_input(prompts["amount_total"],
@@ -53,20 +51,18 @@ class ContractController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
-    def update_contract(self) -> Optional[Contract]:
+    @TokenManager.token_required
+    def update_contract(self, user) -> Optional[Contract]:
         """
         Updates an existing contract.
-
-        :return: The updated contract or None if not found
         """
         try:
             prompts = self.contract_view.contract_view_prompts()
-
             contract_id = self.validators.validate_input(prompts["contract_id"],
                                                          self.validators.validate_existing_contract_id)
             contract = self.get_contract(contract_id)
+
             if contract:
                 prompts = self.contract_view.get_update_user_prompts()
                 customer_id = self.validators.validate_input(prompts["customer_id"],
@@ -97,9 +93,9 @@ class ContractController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
-    def display_contracts(self):
+    @TokenManager.token_required
+    def display_contracts(self, user):
         """
         Display filtered contracts.
         """
@@ -115,9 +111,6 @@ class ContractController:
     def get_filtered_contracts(self, filter_option: int) -> List[Contract]:
         """
         Get filtered contracts.
-
-        :param filter_option: Filter option choosen.
-        :return: Filtered contracts.
         """
         try:
             if filter_option == 1:
@@ -131,27 +124,24 @@ class ContractController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
     def get_contract(self, contract_id: int) -> Optional[Contract]:
         """
-        Obtient un contrat par son ID.
-
-        :param contract_id: L'ID du contrat
-        :return: Le contrat ou None si non trouvé
+        Gets a contratc by ID.
         """
         try:
             return self.session.query(Contract).filter(Contract.id == contract_id).first()
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
     def display_all_contracts(self):
+        """
+        Display all contracts.
+        """
         try:
             contracts = self.session.query(Contract).all()
             self.contract_view.display_contracts_view(contracts)
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None

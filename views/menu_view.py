@@ -124,3 +124,110 @@ class MenuView:
         title, options = menu_options
         choice = self.select_choice(title, options)
         action_map[choice]()
+
+    @staticmethod
+    def validate_id_view(role_details=None):
+        if role_details:
+            MenuView.console.print(f"[bold red]Veuillez choisir un ID parmi les suivants : {role_details}.[/bold red]")
+        else:
+            MenuView.console.print("[bold red]Veuillez entrer un nombre valide pour l'ID.[/bold red]")
+
+    @staticmethod
+    def validate_existing_user_id_view():
+        MenuView.console.print("[bold red]ID d'utilisateur non trouvé.[/bold red]")
+
+    @staticmethod
+    def validate_existing_contract_id_view():
+        MenuView.console.print("[bold red]ID de contrat non trouvé.[/bold red]")
+
+    @staticmethod
+    def validate_existing_customer_id_view():
+        MenuView.console.print("[bold red]ID de client non trouvé.[/bold red]")
+
+    @staticmethod
+    def validate_existing_event_id_view():
+        MenuView.console.print("[bold red]ID d'événement non trouvé.[/bold red]")
+
+    @staticmethod
+    def validate_existing_role_id_view():
+        MenuView.console.print("[bold red]ID de role non trouvé.[/bold red]")
+
+    @staticmethod
+    def validate_add_support_to_event_view():
+        MenuView.console.print("[bold red]Utilisateur non trouvé ou n'est pas un support.[/bold red]")
+
+    @staticmethod
+    def validate_eight_ch_password_view():
+        MenuView.console.print("[bold red]Le mot de passe doit contenir au moins 8 caractères.[/bold red]")
+
+    @staticmethod
+    def validate_maj_password_view():
+        MenuView.console.print("[bold red]Le mot de passe doit contenir une lettre majuscule.[/bold red]")
+
+    @staticmethod
+    def validate_min_password_view():
+        MenuView.console.print("[bold red]Le mot de passe doit contenir une lettre minuscule[/bold red]")
+
+    @staticmethod
+    def validate_num_password_view():
+        MenuView.console.print("[bold red]Le mot de passe doit contenir un chiffre[/bold red]")
+
+    @staticmethod
+    def validate_str_view():
+        MenuView.console.print("[bold red]Chaîne de caractères non valide.[/bold red]")
+
+    @staticmethod
+    def validate_email_view():
+        MenuView.console.print("[bold red]Email non valide.[/bold red]")
+
+    @staticmethod
+    def validate_phone_view():
+        MenuView.console.print("[bold red]Numéro de téléphone non valide.[/bold red]")
+
+    @staticmethod
+    def validate_attendees_view():
+        MenuView.console.print("[bold red]Nombre de participants non valide.[/bold red]")
+
+    @staticmethod
+    def validate_amount_total_view():
+        MenuView.console.print("[bold red]Montant total non valide.[/bold red]")
+
+    @staticmethod
+    def validate_amount_due_view():
+        MenuView.console.print("[bold red]Montant dû non valide.[/bold red]")
+
+    @staticmethod
+    def validate_boolean_view():
+        MenuView.console.print("[bold red]Merci de choisir parmi 'True' ou 'False'.[/bold red]")
+
+    @staticmethod
+    def store_tokens_view(user_id):
+        MenuView.console.print(f"[bold green]Tokens enregistrés pour l'utilisateur {user_id}.[/bold green]")
+
+    @staticmethod
+    def get_tokens_view(user_id):
+        MenuView.console.print(f"[bold blue]Tokens récupérés pour l'utilisateur {user_id}.[/bold blue]")
+
+    @staticmethod
+    def clear_cache_view(user_id):
+        MenuView.console.print(f"[bold green]Cache vidé pour l'utilisateur {user_id}.[/bold green]")
+
+    @staticmethod
+    def refresh_tokens_view():
+        MenuView.console.print("[bold red]Erreur lors de l'actualisation des tokens[/bold red]")
+
+    @staticmethod
+    def check_token_view():
+        MenuView.console.print("[bold red]Token invalide ou expiré.[/bold red]")
+
+    @staticmethod
+    def required_token_view():
+        MenuView.console.print("[bold red]Tokens requis.[/bold red]")
+
+    @staticmethod
+    def missing_token_view():
+        MenuView.console.print("[bold red]Tokens manquants.[/bold red]")
+
+    @staticmethod
+    def invalid_token_view():
+        MenuView.console.print("[bold red]Token invalide ou expiré.[/bold red]")

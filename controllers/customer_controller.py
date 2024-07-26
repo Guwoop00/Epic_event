@@ -1,9 +1,11 @@
 import sentry_sdk
 from models.models import Customer
 from views.customer_view import CustomerView
-from sqlalchemy.orm import Session
-from datetime import date
+from views.menu_view import MenuView
 from utils.validators import DataValidator
+from sqlalchemy.orm import Session
+from utils.jwtoken import TokenManager
+from datetime import date
 
 
 class CustomerController:
@@ -16,20 +18,21 @@ class CustomerController:
         """
         self.session = session
         self.customer_view = CustomerView()
+        self.menu_view = MenuView()
         self.validators = DataValidator(session)
+        self.token_manager = TokenManager()
 
+    @TokenManager.token_required
     def create_customer(self, user):
         """
         Creates a new customer.
-
-        :return: The created customer
         """
         try:
             prompts = self.customer_view.get_create_customer_prompts()
 
             full_name = self.validators.validate_input(prompts["full_name"], self.validators.validate_str)
             email = self.validators.validate_input(prompts["email"], self.validators.validate_email)
-            phone = self.validators.validate_input(prompts["phone"], self.validators.validate_str)
+            phone = self.validators.validate_input(prompts["phone"], self.validators.validate_phone)
             company_name = self.validators.validate_input(prompts["company_name"], self.validators.validate_str)
             creation_date = date.today()
 
@@ -52,22 +55,19 @@ class CustomerController:
             sentry_sdk.capture_exception(e)
             return None
 
-    def update_customer(self):
+    @TokenManager.token_required
+    def update_customer(self, user):
         """
         Updates an existing customer.
-
-        :return: The updated customer or None if not found
         """
         try:
             prompts = self.customer_view.customer_view_prompts()
-
             customer_id = self.validators.validate_input(prompts["customer_id"],
                                                          self.validators.validate_existing_customer_id)
             customer = self.get_customer(customer_id)
 
             if customer:
                 prompts = self.customer_view.get_update_customer_prompts()
-
                 full_name = self.validators.validate_input(prompts["full_name"],
                                                            self.validators.validate_str, allow_empty=True)
                 email = self.validators.validate_input(prompts["email"],
@@ -95,23 +95,19 @@ class CustomerController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
     def get_customer(self, customer_id: int):
         """
         Retrieves a customer by their ID.
-
-        :param customer_id: Customer ID
-        :return: Customer or None
         """
         try:
             return self.session.query(Customer).filter(Customer.id == customer_id).first()
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            return None
 
-    def display_customers(self):
+    @TokenManager.token_required
+    def display_customers(self, user):
         """
         Displays the list of customers.
         """
