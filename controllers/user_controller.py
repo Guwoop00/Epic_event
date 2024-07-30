@@ -46,6 +46,7 @@ class UserController:
         """
         try:
             user = self.get_user_by_email(email)
+            print(user)
 
             if not user:
                 self.user_view.user_not_found()
@@ -73,8 +74,7 @@ class UserController:
                                                    self.validators.validate_email)
             password = self.validators.validate_input(prompts["password"],
                                                       self.validators.validate_password)
-            role_id = self.validators.validate_input(prompts["role_id"],
-                                                     self.validators.validate_id)
+            role_id = self.validators.validate_id()
 
             hashed_password = self.hash_password(password)
 
@@ -100,8 +100,8 @@ class UserController:
         """
         try:
             prompts = self.user_view.user_view_prompts()
-            user_id = self.validators.validate_input(prompts["user_id"],
-                                                     self.validators.validate_existing_user_id)
+            user_id = self.validators.validate_input(prompts["user_id"], lambda value:
+                                                     self.validators.validate_existing_user_id(value, user.id))
             user = self.get_user(user_id)
 
             if user:
@@ -140,20 +140,30 @@ class UserController:
         Deletes an existing user.
         """
         try:
+            print("Starting delete_user process")
             prompts = self.user_view.user_view_prompts()
-            user_id = self.validators.validate_input(prompts["user_id"], self.validators.validate_existing_user_id)
+            print(f"Prompts received: {prompts}")
+            user_id = self.validators.validate_input(prompts["user_id"], lambda value:
+                                                     self.validators.validate_existing_user_id(value, user_id))
+            print(f"Validated user_id: {user_id}")
             user = self.get_user(user_id)
 
             if user:
+                print(f"User found: {user}")
                 self.session.delete(user)
                 self.session.commit()
                 self.user_view.user_deleted()
+                print(f"User deleted: {user}")
             else:
+                print("User not found.")
                 self.user_view.user_not_found()
             return user
 
         except Exception as e:
-            sentry_sdk.capture_exception(e)
+            print(f"Exception occurred: {e}")
+            print(e)
+            # sentry_sdk.capture_exception(e)
+            return None
 
     def database(self, database_actions: Dict[int, Callable]) -> None:
         """

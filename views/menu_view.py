@@ -120,37 +120,36 @@ class MenuView:
         ]
         return title, options
 
+    @staticmethod
+    def validate_id_view():
+        title = "Veuillez choisir un ID parmi les suivants :  "
+        options = [
+            "Admin",
+            "Support",
+            "Sales"
+        ]
+        return title, options
+
     def display_menu(self, menu_options, action_map):
         title, options = menu_options
         choice = self.select_choice(title, options)
         action_map[choice]()
 
     @staticmethod
-    def validate_id_view(role_details=None):
-        if role_details:
-            MenuView.console.print(f"[bold red]Veuillez choisir un ID parmi les suivants : {role_details}.[/bold red]")
-        else:
-            MenuView.console.print("[bold red]Veuillez entrer un nombre valide pour l'ID.[/bold red]")
-
-    @staticmethod
     def validate_existing_user_id_view():
-        MenuView.console.print("[bold red]ID d'utilisateur non trouvé.[/bold red]")
+        MenuView.console.print("[bold red]ID d'utilisateur non valide.[/bold red]")
 
     @staticmethod
     def validate_existing_contract_id_view():
-        MenuView.console.print("[bold red]ID de contrat non trouvé.[/bold red]")
+        MenuView.console.print("[bold red]ID de contrat non valide.[/bold red]")
 
     @staticmethod
     def validate_existing_customer_id_view():
-        MenuView.console.print("[bold red]ID de client non trouvé.[/bold red]")
+        MenuView.console.print("[bold red]ID de client non valide.[/bold red]")
 
     @staticmethod
     def validate_existing_event_id_view():
         MenuView.console.print("[bold red]ID d'événement non trouvé.[/bold red]")
-
-    @staticmethod
-    def validate_existing_role_id_view():
-        MenuView.console.print("[bold red]ID de role non trouvé.[/bold red]")
 
     @staticmethod
     def validate_add_support_to_event_view():

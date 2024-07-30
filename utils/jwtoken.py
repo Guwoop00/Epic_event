@@ -68,7 +68,6 @@ class TokenManager:
 
     def refresh_tokens(self, user) -> Optional[Dict[str, str]]:
         try:
-            print(user)
             access_token = self.create_token(user)
             refresh_token = self.create_refresh_token(user)
             self.store_tokens(user_id=user.id, access_token=access_token, refresh_token=refresh_token)
@@ -103,14 +102,12 @@ class TokenManager:
                 return None
 
             access_token, refresh_token = tokens
-            print(access_token, refresh_token)
 
             if not access_token or not refresh_token:
                 MenuView.missing_token_view()
                 return None
 
             user_id_valid = TokenManager().check_token(access_token, refresh_token, user)
-            print(user_id_valid)
             if user_id_valid is None:
                 MenuView.invalid_token_view()
                 return None

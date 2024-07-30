@@ -62,8 +62,9 @@ class CustomerController:
         """
         try:
             prompts = self.customer_view.customer_view_prompts()
-            customer_id = self.validators.validate_input(prompts["customer_id"],
-                                                         self.validators.validate_existing_customer_id)
+            customer_id = self.validators.validate_input(prompts["customer_id"], lambda value:
+                                                         self.validators.validate_existing_my_customer_id
+                                                         (value, user.id))
             customer = self.get_customer(customer_id)
 
             if customer:

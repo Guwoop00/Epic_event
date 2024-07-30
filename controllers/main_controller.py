@@ -98,7 +98,7 @@ class MainController:
         try:
             username, password = self.user_view.input_login_view()
             user = self.user_controller.auth_user(username, password)
-
+            print(user)
             access_token = self.token_manager.create_token(user)
             refresh_token = self.token_manager.create_refresh_token(user)
 

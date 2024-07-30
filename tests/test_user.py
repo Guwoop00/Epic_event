@@ -1,36 +1,140 @@
-import pytest
+import unittest
+from unittest.mock import MagicMock, patch
+from models.models import User, Base, Role
 from controllers.user_controller import UserController
-from unittest.mock import patch, MagicMock
+from utils.config import get_test_session, test_engine
+from utils.jwtoken import TokenManager
 
 
-@pytest.fixture
-def test_user_controller():
-    session = MagicMock()
-    return UserController(session)
+class TestUserController(unittest.TestCase):
+
+    def setUp(self):
+        Base.metadata.drop_all(bind=test_engine)
+        Base.metadata.create_all(bind=test_engine)
+
+        self.session = next(get_test_session())
+        self.user_controller = UserController(session=self.session)
+
+        self.token_manager = TokenManager()
+        self.user_controller.token_manager = self.token_manager
+
+        self.user_view_mock = MagicMock()
+        self.user_controller.user_view = self.user_view_mock
+
+    def tearDown(self):
+        self.session.close()
+
+    def test_hash_password(self):
+        password = "secure_password"
+        hashed = self.user_controller.hash_password(password)
+        self.assertNotEqual(password, hashed)
+
+    def test_get_user_by_email(self):
+        email = "test@example.com"
+        mock_user = User(id=1, email=email, full_name="Test User", password="hashed_password")
+        self.session.add(mock_user)
+        self.session.commit()
+
+        user = self.user_controller.get_user_by_email(email)
+        self.assertEqual(user.email, mock_user.email)
+
+    def test_auth_user_success(self):
+        email = "test@example.com"
+        password = "secure_password"
+        hashed_password = self.user_controller.hash_password(password)
+        mock_user = User(id=1, email=email, full_name="Test User", password=hashed_password)
+
+        self.session.add(mock_user)
+        self.session.commit()
+
+        user = self.user_controller.auth_user(email, password)
+        self.assertIsNotNone(user)
+        self.assertEqual(user.email, mock_user.email)
+
+    def test_auth_user_incorrect_password(self):
+        email = "test@example.com"
+        password = "secure_password"
+        wrong_password = "wrong_password"
+        hashed_password = self.user_controller.hash_password(password)
+        mock_user = User(id=1, email=email, full_name="Test User", password=hashed_password)
+
+        self.session.add(mock_user)
+        self.session.commit()
+
+        user = self.user_controller.auth_user(email, wrong_password)
+        self.assertIsNone(user)
+
+    def test_create_user(self):
+        email = "auth@ex.com"
+        password = 'Azerty13'
+        hashed_password = self.user_controller.hash_password(password)
+        role = Role(id=1, name="UserRole")
+        authenticated_user = User(id=1, email=email, full_name="Auth User", password=hashed_password, role=role)
+
+        self.session.add(role)
+        self.session.add(authenticated_user)
+        self.session.commit()
+
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+            with patch.object(self.token_manager, 'check_token', return_value=True):
+                with patch.object(self.token_manager, 'validate_token', return_value=True):
+                    with patch.object(self.user_controller, 'hash_password', return_value='hashed_password'):
+                        with patch.object(self.user_controller, 'validators') as mock_validator:
+                            mock_validator.validate_input.side_effect = ['Test User', 'test@example.com', 'password', 1]
+
+                            user = self.user_controller.create_user(authenticated_user)
+                            self.assertIsNotNone(user)
+                            self.assertEqual(user.full_name, 'Test User')
+                            self.session.commit()
+
+    def test_update_user(self):
+        user_id = 1
+        email = "auth@ex.com"
+        password = 'Azerty13'
+        hashed_password = self.user_controller.hash_password(password)
+        role = Role(id=1, name="UserRole")
+        authenticated_user = User(id=user_id, email=email, full_name="Auth User", password=hashed_password, role=role)
+
+        self.session.add(role)
+        self.session.add(authenticated_user)
+        self.session.commit()
+
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+            with patch.object(self.token_manager, 'check_token', return_value=True):
+                with patch.object(self.token_manager, 'validate_token', return_value=True):
+                    with patch.object(self.user_controller, 'validators') as mock_validator:
+                        mock_validator.validate_input.side_effect = [user_id, 'New User',
+                                                                     'new@example.com', 'new_password', 1]
+
+                        user = self.user_controller.update_user(authenticated_user)
+                        self.assertIsNotNone(user)
+                        self.assertEqual(user.full_name, 'New User')
+                        self.session.commit()
+
+    def test_delete_user(self):
+        user_id = 1
+        email = "auth@ex.com"
+        password = 'Azerty13'
+        hashed_password = self.user_controller.hash_password(password)
+        role = Role(id=1, name="UserRole")
+        authenticated_user = User(id=user_id, email=email, full_name="Auth User", password=hashed_password, role=role)
+
+        self.session.add(role)
+        self.session.add(authenticated_user)
+        self.session.commit()
+
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+            with patch.object(self.token_manager, 'check_token', return_value=True):
+                with patch.object(self.token_manager, 'validate_token', return_value=True):
+                    with patch.object(self.user_controller, 'validators') as mock_validator:
+                        mock_validator.validate_input.side_effect = [user_id]
+
+                        deleted_user = self.user_controller.delete_user(authenticated_user)
+                        print(f"Deleted user: {deleted_user}")
+                        self.assertIsNotNone(deleted_user)
+                        self.assertEqual(deleted_user.id, user_id)
+                        self.session.commit()
 
 
-def test_create_user(monkeypatch, test_user_controller):
-    user_controller = test_user_controller
-
-    monkeypatch.setattr(user_controller.user_view, 'get_create_user_prompts',
-                        lambda: {
-                            "full_name": "Nom complet: ",
-                            "email": "Email: ",
-                            "password": "Mot de passe: ",
-                            "role_id": "Rôle ID (1: admin, 2: support, 3: sales): "
-                        })
-
-    inputs = iter(["Test User", "test@example.com", "Securepassword1", "1"])
-    monkeypatch.setattr('builtins.input', lambda _: next(inputs))
-
-    with patch.object(user_controller, 'hash_password', return_value='hashedpassword'):
-
-        new_user = user_controller.create_user()
-        print(new_user)
-
-        user_controller.session.add.assert_called_once_with(new_user)
-
-    assert new_user is not None, "L'utilisateur ne devrait pas être None"
-    assert new_user.email == "test@example.com", "L'email de l'utilisateur doit correspondre"
-    assert new_user.full_name == "Test User", "Le nom complet de l'utilisateur doit correspondre"
-    assert new_user.role_id == 1, "L'ID de rôle de l'utilisateur doit correspondre"
+if __name__ == '__main__':
+    unittest.main()
