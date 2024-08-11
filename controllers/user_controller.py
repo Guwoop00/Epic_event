@@ -74,8 +74,8 @@ class UserController:
                                                    self.validators.validate_email)
             password = self.validators.validate_input(prompts["password"],
                                                       self.validators.validate_password)
-            role_id = self.validators.validate_id()
-
+            role_id = self.validators.validate_input(prompts["role_id"],
+                                                     self.validators.validate_role_id)
             hashed_password = self.hash_password(password)
 
             user = User(full_name=full_name,

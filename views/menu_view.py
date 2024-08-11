@@ -120,113 +120,183 @@ class MenuView:
         ]
         return title, options
 
-    @staticmethod
-    def validate_id_view():
-        title = "Veuillez choisir un ID parmi les suivants :  "
-        options = [
-            "Admin",
-            "Support",
-            "Sales"
-        ]
-        return title, options
-
     def display_menu(self, menu_options, action_map):
         title, options = menu_options
         choice = self.select_choice(title, options)
         action_map[choice]()
 
     @staticmethod
-    def validate_existing_user_id_view():
-        MenuView.console.print("[bold red]ID d'utilisateur non valide.[/bold red]")
+    def contract_not_assigned_to_user(contract_id, user_id):
+        MenuView.console.print(
+            f"\n[bold red]Erreur:[/bold red] Le contrat ID {contract_id}"
+            f"n'est pas assigné à l'utilisateur ID {user_id}.\n"
+        )
 
     @staticmethod
-    def validate_existing_contract_id_view():
-        MenuView.console.print("[bold red]ID de contrat non valide.[/bold red]")
+    def validate_role_id_view(role_id):
+        MenuView.console.print(
+            f"\n[bold red]Erreur:[/bold red] Aucun role trouvé avec cet ID {role_id}.\n"
+        )
 
     @staticmethod
-    def validate_existing_customer_id_view():
-        MenuView.console.print("[bold red]ID de client non valide.[/bold red]")
+    def contract_not_found(contract_id):
+        MenuView.console.print(
+            f"\n[bold red]Erreur:[/bold red] Aucun contrat trouvé avec l'ID {contract_id}.\n"
+        )
 
     @staticmethod
-    def validate_existing_event_id_view():
-        MenuView.console.print("[bold red]ID d'événement non trouvé.[/bold red]")
+    def customer_not_assigned_to_user(customer_id, user_id):
+        MenuView.console.print(
+            f"\n[bold red]Erreur:[/bold red] Le client ID {customer_id}"
+            f"n'est pas assigné à l'utilisateur ID {user_id}.\n"
+        )
 
     @staticmethod
-    def validate_add_support_to_event_view():
-        MenuView.console.print("[bold red]Utilisateur non trouvé ou n'est pas un support.[/bold red]")
+    def customer_not_found(customer_id):
+        MenuView.console.print(
+            f"\n[bold red]Erreur:[/bold red] Aucun client trouvé avec l'ID {customer_id}.\n"
+        )
 
     @staticmethod
-    def validate_eight_ch_password_view():
-        MenuView.console.print("[bold red]Le mot de passe doit contenir au moins 8 caractères.[/bold red]")
+    def event_not_found(event_id):
+        MenuView.console.print(
+            f"\n[bold red]Erreur:[/bold red] Aucun événement trouvé avec l'ID {event_id}.\n"
+        )
 
     @staticmethod
-    def validate_maj_password_view():
-        MenuView.console.print("[bold red]Le mot de passe doit contenir une lettre majuscule.[/bold red]")
+    def user_not_support(user_id):
+        MenuView.console.print(
+            f"\n[bold red]Erreur:[/bold red] L'utilisateur ID {user_id} n'est pas un membre du support.\n"
+        )
 
     @staticmethod
-    def validate_min_password_view():
-        MenuView.console.print("[bold red]Le mot de passe doit contenir une lettre minuscule[/bold red]")
+    def user_not_found(user_id):
+        MenuView.console.print(
+            f"\n[bold red]Erreur:[/bold red] Aucun utilisateur trouvé avec l'ID {user_id}.\n"
+        )
 
     @staticmethod
-    def validate_num_password_view():
-        MenuView.console.print("[bold red]Le mot de passe doit contenir un chiffre[/bold red]")
+    def password_too_short():
+        MenuView.console.print(
+            "\n[bold red]Erreur:[/bold red] Le mot de passe doit comporter au moins 8 caractères.\n"
+        )
 
     @staticmethod
-    def validate_str_view():
-        MenuView.console.print("[bold red]Chaîne de caractères non valide.[/bold red]")
+    def password_missing_uppercase():
+        MenuView.console.print(
+            "\n[bold red]Erreur:[/bold red] Le mot de passe doit contenir au moins une lettre majuscule.\n"
+        )
+
+    @staticmethod
+    def password_missing_lowercase():
+        MenuView.console.print(
+            "\n[bold red]Erreur:[/bold red] Le mot de passe doit contenir au moins une lettre minuscule.\n"
+        )
+
+    @staticmethod
+    def password_missing_number():
+        MenuView.console.print(
+            "\n[bold red]Erreur:[/bold red] Le mot de passe doit contenir au moins un chiffre.\n"
+        )
+
+    @staticmethod
+    def invalid_string():
+        MenuView.console.print(
+            "\n[bold red]Erreur:[/bold red]Erreur:[/bold red] La chaîne de caractères saisie n'est pas valide.\n"
+        )
+
+    @staticmethod
+    def user_role_error():
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Cet utilisateur est un admin."
+        )
+
+    @staticmethod
+    def user_not_found_error():
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Cet utilisateur n'existe pas."
+        )
 
     @staticmethod
     def validate_email_view():
-        MenuView.console.print("[bold red]Email non valide.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Email non valide."
+        )
 
     @staticmethod
     def validate_phone_view():
-        MenuView.console.print("[bold red]Numéro de téléphone non valide.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red ]Numéro de téléphone non valide."
+        )
 
     @staticmethod
     def validate_attendees_view():
-        MenuView.console.print("[bold red]Nombre de participants non valide.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Nombre de participants non valide."
+        )
 
     @staticmethod
     def validate_amount_total_view():
-        MenuView.console.print("[bold red]Montant total non valide.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Montant total non valide."
+        )
 
     @staticmethod
     def validate_amount_due_view():
-        MenuView.console.print("[bold red]Montant dû non valide.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Montant dû non valide."
+        )
 
     @staticmethod
     def validate_boolean_view():
-        MenuView.console.print("[bold red]Merci de choisir parmi 'True' ou 'False'.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Merci de choisir parmi 'True' ou 'False'."
+        )
 
     @staticmethod
     def store_tokens_view(user_id):
-        MenuView.console.print(f"[bold green]Tokens enregistrés pour l'utilisateur {user_id}.[/bold green]")
+        MenuView.console.print(
+            f"[bold green]Tokens enregistrés pour l'utilisateur {user_id}.[/bold green]"
+        )
 
     @staticmethod
     def get_tokens_view(user_id):
-        MenuView.console.print(f"[bold blue]Tokens récupérés pour l'utilisateur {user_id}.[/bold blue]")
+        MenuView.console.print(
+            f"[bold blue]Tokens récupérés pour l'utilisateur {user_id}.[/bold blue]"
+        )
 
     @staticmethod
     def clear_cache_view(user_id):
-        MenuView.console.print(f"[bold green]Cache vidé pour l'utilisateur {user_id}.[/bold green]")
+        MenuView.console.print(
+            f"[bold green]Cache vidé pour l'utilisateur {user_id}.[/bold green]"
+        )
 
     @staticmethod
     def refresh_tokens_view():
-        MenuView.console.print("[bold red]Erreur lors de l'actualisation des tokens[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur lors de l'actualisation des tokens[/bold red]"
+        )
 
     @staticmethod
     def check_token_view():
-        MenuView.console.print("[bold red]Token invalide ou expiré.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Token invalide ou expiré.[/bold red]"
+        )
 
     @staticmethod
     def required_token_view():
-        MenuView.console.print("[bold red]Tokens requis.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Tokens requis."
+        )
 
     @staticmethod
     def missing_token_view():
-        MenuView.console.print("[bold red]Tokens manquants.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Tokens manquants."
+        )
 
     @staticmethod
     def invalid_token_view():
-        MenuView.console.print("[bold red]Token invalide ou expiré.[/bold red]")
+        MenuView.console.print(
+            "[bold red]Erreur:[/bold red] Token invalide ou expiré.[/bold red]"
+        )

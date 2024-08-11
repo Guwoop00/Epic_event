@@ -1,4 +1,5 @@
 from rich.console import Console
+from getpass import getpass
 
 
 class UserView:
@@ -6,8 +7,8 @@ class UserView:
 
     def input_login_view(self):
         self.console.print("\n[bold yellow]Entrer vos identifiants[/bold yellow]\n")
-        username = input("Email de connection: ")
-        password = input("Mot de passe: ")
+        username = input("Email de connexion: ")
+        password = getpass("Mot de passe: ")
         return username, password
 
     def get_create_user_prompts(self):
