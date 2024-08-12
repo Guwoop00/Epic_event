@@ -93,32 +93,34 @@ class MainController:
 
     def main_menu(self) -> None:
         """
-        Displays the main menu after user authentication.
+        Affiche le menu principal après l'authentification de l'utilisateur.
         """
         try:
             username, password = self.user_view.input_login_view()
             user = self.user_controller.auth_user(username, password)
-            print(user)
-            access_token = self.token_manager.create_token(user)
-            refresh_token = self.token_manager.create_refresh_token(user)
+            if user:
+                access_token = self.token_manager.create_token(user)
+                self.token_manager.store_tokens(user.id, access_token)
+                user_verified = self.token_manager.validate_token(access_token)
 
-            self.token_manager.store_tokens(user.id, access_token, refresh_token)
-            user_verified = self.token_manager.validate_token(access_token)
+                if user_verified:
+                    self.user_view.authenticated_user_view()
+                    role = user.role.name.lower()
+                    menu_method_name = f"{role}_menu_options"
+                    menu_option = getattr(self.menu_view, menu_method_name)()
+                    action_map = self.build_action_map(role, user)
+                    self.menu_view.display_menu(menu_option, action_map)
+                else:
+                    self.user_view.unauthenticated_user_view()
+                    self.login_menu()
 
-            if user_verified:
-                self.user_view.authenticated_user_view()
-                role = user.role.name.lower()
-                menu_method_name = f"{role}_menu_options"
-                menu_option = getattr(self.menu_view, menu_method_name)()
-                action_map = self.build_action_map(role, user)
-                self.menu_view.display_menu(menu_option, action_map)
             else:
                 self.user_view.unauthenticated_user_view()
                 self.login_menu()
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            self.console.print(f"An error occurred: {e}")
+            self.login_menu()
 
 
 if __name__ == "__main__":
@@ -128,4 +130,3 @@ if __name__ == "__main__":
 
     except Exception as e:
         sentry_sdk.capture_exception(e)
-        Console().print(f"An error occurred: {e}")

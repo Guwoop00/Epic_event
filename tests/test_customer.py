@@ -34,7 +34,7 @@ class TestCustomerController(unittest.TestCase):
             'John Doe', 'john.doe@example.com', '1234567890', 'Doe Inc.'
         ]
 
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     customer = self.customer_controller.create_customer(user)
@@ -53,7 +53,7 @@ class TestCustomerController(unittest.TestCase):
             customer.id, 'Jane Smith', 'jane.smith@example.com', '1122334455', 'Smith Corp'
         ]
 
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     updated_customer = self.customer_controller.update_customer(user)

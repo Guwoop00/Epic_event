@@ -32,7 +32,7 @@ class TestContractController(unittest.TestCase):
         user = MagicMock()
         self.mock_validator.validate_input.side_effect = [1, 1000.0, 500.0, True]
 
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     contract = self.contract_controller.create_contract(user)
@@ -47,7 +47,7 @@ class TestContractController(unittest.TestCase):
         self.session.commit()
 
         self.mock_validator.validate_input.side_effect = [1, 2, 1500.0, 750.0, True]
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     updated_contract = self.contract_controller.update_contract(user)

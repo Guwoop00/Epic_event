@@ -46,7 +46,6 @@ class UserController:
         """
         try:
             user = self.get_user_by_email(email)
-            print(user)
 
             if not user:
                 self.user_view.user_not_found()
@@ -60,6 +59,15 @@ class UserController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+
+    def reauthenticate_user(self) -> Optional[Dict[str, str]]:
+        """
+        Prompts the user to re-enter their credentials to reauthenticate.
+        """
+        print("bonjour")
+        email = self.user_view.prompt_email()
+        password = self.user_view.prompt_password()
+        return self.auth_user(email, password)
 
     @TokenManager.token_required
     def create_user(self, user) -> Optional[User]:
@@ -140,29 +148,21 @@ class UserController:
         Deletes an existing user.
         """
         try:
-            print("Starting delete_user process")
             prompts = self.user_view.user_view_prompts()
-            print(f"Prompts received: {prompts}")
             user_id = self.validators.validate_input(prompts["user_id"], lambda value:
                                                      self.validators.validate_existing_user_id(value, user_id))
-            print(f"Validated user_id: {user_id}")
             user = self.get_user(user_id)
 
             if user:
-                print(f"User found: {user}")
                 self.session.delete(user)
                 self.session.commit()
                 self.user_view.user_deleted()
-                print(f"User deleted: {user}")
             else:
-                print("User not found.")
                 self.user_view.user_not_found()
             return user
 
         except Exception as e:
-            print(f"Exception occurred: {e}")
-            print(e)
-            # sentry_sdk.capture_exception(e)
+            sentry_sdk.capture_exception(e)
             return None
 
     def database(self, database_actions: Dict[int, Callable]) -> None:
@@ -183,6 +183,5 @@ class UserController:
         """
         try:
             self.token_manager.clear_cache(user.id)
-            print("Successfully logged out.")
         except Exception as e:
             sentry_sdk.capture_exception(e)

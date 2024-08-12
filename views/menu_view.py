@@ -272,12 +272,6 @@ class MenuView:
         )
 
     @staticmethod
-    def refresh_tokens_view():
-        MenuView.console.print(
-            "[bold red]Erreur lors de l'actualisation des tokens[/bold red]"
-        )
-
-    @staticmethod
     def check_token_view():
         MenuView.console.print(
             "[bold red]Token invalide ou expiré.[/bold red]"

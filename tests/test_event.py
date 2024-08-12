@@ -35,7 +35,7 @@ class TestEventController(unittest.TestCase):
             'Product Launch', 1, date.today(), date.today(), 'New York', 50, 'Important event'
         ]
 
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     event = self.event_controller.create_event(user)
@@ -54,7 +54,7 @@ class TestEventController(unittest.TestCase):
             event.id, 'Updated Event', date.today(), date.today(), 'New Location', 20, 'Updated Notes', 1
         ]
 
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     updated_event = self.event_controller.update_event(user)
@@ -98,7 +98,7 @@ class TestEventController(unittest.TestCase):
             event.id, 2
         ]
 
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     updated_event = self.event_controller.add_support_to_event(user)

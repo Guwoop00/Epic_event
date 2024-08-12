@@ -43,6 +43,7 @@ class UserView:
 
     @staticmethod
     def unauthenticated_user_view():
+        print("ici")
         UserView.console.print("\n[bold red]Utilisateur ou mot de passe incorrect ![/bold red]\n")
 
     @staticmethod

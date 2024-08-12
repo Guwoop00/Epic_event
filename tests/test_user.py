@@ -24,6 +24,18 @@ class TestUserController(unittest.TestCase):
     def tearDown(self):
         self.session.close()
 
+    def create_authenticated_user(self, user_id=1, email="auth@ex.com", full_name="Auth User",
+                                  password='Azerty13', role_name="UserRole"):
+        hashed_password = self.user_controller.hash_password(password)
+        role = Role(id=1, name=role_name)
+        authenticated_user = User(id=user_id, email=email, full_name=full_name, password=hashed_password, role=role)
+
+        self.session.add(role)
+        self.session.add(authenticated_user)
+        self.session.commit()
+
+        return authenticated_user
+
     def test_hash_password(self):
         password = "secure_password"
         hashed = self.user_controller.hash_password(password)
@@ -65,17 +77,9 @@ class TestUserController(unittest.TestCase):
         self.assertIsNone(user)
 
     def test_create_user(self):
-        email = "auth@ex.com"
-        password = 'Azerty13'
-        hashed_password = self.user_controller.hash_password(password)
-        role = Role(id=1, name="UserRole")
-        authenticated_user = User(id=1, email=email, full_name="Auth User", password=hashed_password, role=role)
+        authenticated_user = self.create_authenticated_user()
 
-        self.session.add(role)
-        self.session.add(authenticated_user)
-        self.session.commit()
-
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     with patch.object(self.user_controller, 'hash_password', return_value='hashed_password'):
@@ -88,22 +92,13 @@ class TestUserController(unittest.TestCase):
                             self.session.commit()
 
     def test_update_user(self):
-        user_id = 1
-        email = "auth@ex.com"
-        password = 'Azerty13'
-        hashed_password = self.user_controller.hash_password(password)
-        role = Role(id=1, name="UserRole")
-        authenticated_user = User(id=user_id, email=email, full_name="Auth User", password=hashed_password, role=role)
+        authenticated_user = self.create_authenticated_user()
 
-        self.session.add(role)
-        self.session.add(authenticated_user)
-        self.session.commit()
-
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     with patch.object(self.user_controller, 'validators') as mock_validator:
-                        mock_validator.validate_input.side_effect = [user_id, 'New User',
+                        mock_validator.validate_input.side_effect = [authenticated_user.id, 'New User',
                                                                      'new@example.com', 'new_password', 1]
 
                         user = self.user_controller.update_user(authenticated_user)
@@ -112,27 +107,17 @@ class TestUserController(unittest.TestCase):
                         self.session.commit()
 
     def test_delete_user(self):
-        user_id = 1
-        email = "auth@ex.com"
-        password = 'Azerty13'
-        hashed_password = self.user_controller.hash_password(password)
-        role = Role(id=1, name="UserRole")
-        authenticated_user = User(id=user_id, email=email, full_name="Auth User", password=hashed_password, role=role)
+        authenticated_user = self.create_authenticated_user()
 
-        self.session.add(role)
-        self.session.add(authenticated_user)
-        self.session.commit()
-
-        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token", "fake_refresh_token")):
+        with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
                     with patch.object(self.user_controller, 'validators') as mock_validator:
-                        mock_validator.validate_input.side_effect = [user_id]
+                        mock_validator.validate_input.side_effect = [authenticated_user.id]
 
                         deleted_user = self.user_controller.delete_user(authenticated_user)
-                        print(f"Deleted user: {deleted_user}")
                         self.assertIsNotNone(deleted_user)
-                        self.assertEqual(deleted_user.id, user_id)
+                        self.assertEqual(deleted_user.id, authenticated_user.id)
                         self.session.commit()
 
 
