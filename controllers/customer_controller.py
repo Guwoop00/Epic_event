@@ -107,8 +107,7 @@ class CustomerController:
         except Exception as e:
             sentry_sdk.capture_exception(e)
 
-    @TokenManager.token_required
-    def display_customers(self, user):
+    def display_all_customers(self):
         """
         Displays the list of customers.
         """

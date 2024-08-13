@@ -60,15 +60,6 @@ class UserController:
         except Exception as e:
             sentry_sdk.capture_exception(e)
 
-    def reauthenticate_user(self) -> Optional[Dict[str, str]]:
-        """
-        Prompts the user to re-enter their credentials to reauthenticate.
-        """
-        print("bonjour")
-        email = self.user_view.prompt_email()
-        password = self.user_view.prompt_password()
-        return self.auth_user(email, password)
-
     @TokenManager.token_required
     def create_user(self, user) -> Optional[User]:
         """
@@ -121,7 +112,7 @@ class UserController:
                 password = self.validators.validate_input(prompts["password"],
                                                           self.validators.validate_password, allow_empty=True)
                 role_id = self.validators.validate_input(prompts["role_id"],
-                                                         self.validators.validate_id, allow_empty=True)
+                                                         self.validators.validate_role_id, allow_empty=True)
 
                 if full_name:
                     user.full_name = full_name
@@ -150,7 +141,7 @@ class UserController:
         try:
             prompts = self.user_view.user_view_prompts()
             user_id = self.validators.validate_input(prompts["user_id"], lambda value:
-                                                     self.validators.validate_existing_user_id(value, user_id))
+                                                     self.validators.validate_existing_user_id(value, user.id))
             user = self.get_user(user_id)
 
             if user:

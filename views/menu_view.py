@@ -158,6 +158,12 @@ class MenuView:
         )
 
     @staticmethod
+    def object_not_found_empty():
+        MenuView.console.print(
+            "\n[bold red]Erreur:[/bold red] Merci de choisir un ID valide.\n"
+        )
+
+    @staticmethod
     def event_not_found(event_id):
         MenuView.console.print(
             f"\n[bold red]Erreur:[/bold red] Aucun événement trouvé avec l'ID {event_id}.\n"
@@ -202,7 +208,7 @@ class MenuView:
     @staticmethod
     def invalid_string():
         MenuView.console.print(
-            "\n[bold red]Erreur:[/bold red]Erreur:[/bold red] La chaîne de caractères saisie n'est pas valide.\n"
+            "\n[bold red]Erreur:[/bold red] La chaîne de caractères saisie n'est pas valide.\n"
         )
 
     @staticmethod

@@ -17,8 +17,12 @@ class DataValidator:
                 value = getpass(prompt)
             else:
                 value = input(prompt)
-            if allow_empty and value == "":
+
+            # Retourner None si l'entrée est vide et allow_empty est True
+            if allow_empty and value.strip() == "":
                 return None
+
+            # Valider l'entrée avec la méthode de validation fournie
             if validation_method(value):
                 return value
 
@@ -54,6 +58,9 @@ class DataValidator:
         return False
 
     def validate_existing_customer_id(self, value: int) -> bool:
+        if not value:
+            MenuView.object_not_found_empty()
+            return False
         customer = self.session.query(Customer).filter(Customer.id == value).first()
         if customer:
             return True
@@ -72,6 +79,9 @@ class DataValidator:
         return False
 
     def validate_existing_event_id(self, value: int) -> bool:
+        if not value:
+            MenuView.object_not_found_empty()
+            return False
         event = self.session.query(Event).filter(Event.id == value).first()
         if event:
             return True

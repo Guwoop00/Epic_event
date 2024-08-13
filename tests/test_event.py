@@ -28,6 +28,16 @@ class TestEventController(unittest.TestCase):
     def tearDown(self):
         self.session.close()
 
+    def create_mock_event(self, event_name="Default Event", contract_id=1, event_start_date=date.today(),
+                          event_end_date=date.today(), location="Default Location",
+                          attendees=10, notes="Default Notes"):
+        """Helper method to create and persist a mock event"""
+        event = Event(event_name=event_name, contract_id=contract_id, event_start_date=event_start_date,
+                      event_end_date=event_end_date, location=location, attendees=attendees, notes=notes)
+        self.session.add(event)
+        self.session.commit()
+        return event
+
     def test_create_event(self):
         """Test event creation with mocked user input"""
         user = MagicMock(id=1)
@@ -45,10 +55,7 @@ class TestEventController(unittest.TestCase):
     def test_update_event(self):
         """Test event update with mocked user input"""
         user = MagicMock(id=1)
-        event = Event(event_name='Old Event', contract_id=1, event_start_date=date.today(),
-                      event_end_date=date.today(), location='Old Location', attendees=10, notes='Old Notes')
-        self.session.add(event)
-        self.session.commit()
+        event = self.create_mock_event(event_name='Old Event', location='Old Location', attendees=10, notes='Old Notes')
 
         self.mock_validator.validate_input.side_effect = [
             event.id, 'Updated Event', date.today(), date.today(), 'New Location', 20, 'Updated Notes', 1
@@ -63,10 +70,7 @@ class TestEventController(unittest.TestCase):
 
     def test_get_event(self):
         """Test retrieving an event by ID"""
-        event = Event(event_name='Event A', contract_id=1, event_start_date=date.today(),
-                      event_end_date=date.today(), location='Location A', attendees=10, notes='Notes A')
-        self.session.add(event)
-        self.session.commit()
+        event = self.create_mock_event(event_name='Event A', location='Location A', attendees=10, notes='Notes A')
 
         fetched_event = self.event_controller.get_event(event.id)
         self.assertEqual(fetched_event.id, event.id)
@@ -74,13 +78,8 @@ class TestEventController(unittest.TestCase):
 
     def test_display_all_events(self):
         """Test displaying all events"""
-        event1 = Event(event_name='Event A', contract_id=1, event_start_date=date.today(),
-                       event_end_date=date.today(), location='Location A', attendees=10, notes='Notes A')
-        event2 = Event(event_name='Event B', contract_id=2, event_start_date=date.today(),
-                       event_end_date=date.today(), location='Location B', attendees=20, notes='Notes B')
-        self.session.add(event1)
-        self.session.add(event2)
-        self.session.commit()
+        event1 = self.create_mock_event(event_name='Event A', location='Location A', attendees=10, notes='Notes A')
+        event2 = self.create_mock_event(event_name='Event B', location='Location B', attendees=20, notes='Notes B')
 
         with patch.object(self.event_controller.event_view, 'display_events_view') as mock_display:
             self.event_controller.display_all_events()
@@ -89,10 +88,7 @@ class TestEventController(unittest.TestCase):
     def test_add_support_to_event(self):
         """Test adding support to an event"""
         user = MagicMock(id=1)
-        event = Event(event_name='Event A', contract_id=1, event_start_date=date.today(),
-                      event_end_date=date.today(), location='Location A', attendees=10, notes='Notes A')
-        self.session.add(event)
-        self.session.commit()
+        event = self.create_mock_event(event_name='Event A', location='Location A', attendees=10, notes='Notes A')
 
         self.mock_validator.validate_input.side_effect = [
             event.id, 2

@@ -40,7 +40,7 @@ class MainController:
             2: exit
         }
         self.database_actions = {
-            1: self.customer_controller.display_customers,
+            1: self.customer_controller.display_all_customers,
             2: self.contract_controller.display_all_contracts,
             3: self.event_controller.display_all_events,
             4: self.main_menu,

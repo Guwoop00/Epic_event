@@ -27,11 +27,19 @@ class TestCustomerController(unittest.TestCase):
     def tearDown(self):
         self.session.close()
 
+    def create_mock_customer(self, full_name="John Doe", email="john.doe@example.com",
+                             phone="1234567890", company_name="Doe Inc."):
+        """Helper method to create and persist a mock customer"""
+        customer = Customer(full_name=full_name, email=email, phone=phone, company_name=company_name)
+        self.session.add(customer)
+        self.session.commit()
+        return customer
+
     def test_create_customer(self):
         """Test customer creation with mocked user input"""
         user = MagicMock(id=1)
         self.mock_validator.validate_input.side_effect = [
-            'John Doe', 'john.doe@example.com', '1234567890', 'Doe Inc.'
+            'John Doe', 'john.doe@example.com', '1234567890', 'Doe Inc.', 1
         ]
 
         with patch.object(self.token_manager, 'get_tokens', return_value=("fake_access_token")):
@@ -43,11 +51,9 @@ class TestCustomerController(unittest.TestCase):
 
     def test_update_customer(self):
         """Test customer update with mocked user input"""
-        user = MagicMock(id=1)
-        customer = Customer(full_name='Jane Doe', email='jane.doe@example.com',
-                            phone='0987654321', company_name='Doe Corp')
-        self.session.add(customer)
-        self.session.commit()
+        user = MagicMock()
+        customer = self.create_mock_customer(full_name='Jane Doe', email='jane.doe@example.com',
+                                             phone='0987654321', company_name='Doe Corp')
 
         self.mock_validator.validate_input.side_effect = [
             customer.id, 'Jane Smith', 'jane.smith@example.com', '1122334455', 'Smith Corp'
@@ -62,10 +68,8 @@ class TestCustomerController(unittest.TestCase):
 
     def test_get_customer(self):
         """Test getting a customer by ID"""
-        customer = Customer(full_name='John Smith', email='john.smith@example.com',
-                            phone='1231231234', company_name='Smith Ltd')
-        self.session.add(customer)
-        self.session.commit()
+        customer = self.create_mock_customer(full_name='John Smith', email='john.smith@example.com',
+                                             phone='1231231234', company_name='Smith Ltd')
 
         fetched_customer = self.customer_controller.get_customer(customer.id)
         self.assertEqual(fetched_customer.id, customer.id)
