@@ -70,6 +70,7 @@ class MenuView:
     def support_menu_options():
         title = "Menu Support"
         options = ["Filtrer les evenements",
+                   "Mettre à jour les evenements",
                    "Database [Read Only]",
                    "Log out"]
         return title, options
@@ -128,57 +129,57 @@ class MenuView:
     @staticmethod
     def contract_not_assigned_to_user(contract_id, user_id):
         MenuView.console.print(
-            f"\n[bold red]Erreur:[/bold red] Le contrat ID {contract_id}"
+            f"\n[bold red]Erreur: [/bold red] Le contrat ID {contract_id}"
             f"n'est pas assigné à l'utilisateur ID {user_id}.\n"
         )
 
     @staticmethod
     def validate_role_id_view(role_id):
         MenuView.console.print(
-            f"\n[bold red]Erreur:[/bold red] Aucun role trouvé avec cet ID {role_id}.\n"
+            f"\n[bold red]Erreur: [/bold red] Aucun role trouvé avec cet ID {role_id}.\n"
         )
 
     @staticmethod
     def contract_not_found(contract_id):
         MenuView.console.print(
-            f"\n[bold red]Erreur:[/bold red] Aucun contrat trouvé avec l'ID {contract_id}.\n"
+            f"\n[bold red]Erreur: [/bold red] Aucun contrat trouvé avec l'ID {contract_id}.\n"
         )
 
     @staticmethod
     def customer_not_assigned_to_user(customer_id, user_id):
         MenuView.console.print(
-            f"\n[bold red]Erreur:[/bold red] Le client ID {customer_id}"
+            f"\n[bold red]Erreur: [/bold red] Le client ID {customer_id}"
             f"n'est pas assigné à l'utilisateur ID {user_id}.\n"
         )
 
     @staticmethod
     def customer_not_found(customer_id):
         MenuView.console.print(
-            f"\n[bold red]Erreur:[/bold red] Aucun client trouvé avec l'ID {customer_id}.\n"
+            f"\n[bold red]Erreur: [/bold red] Aucun client trouvé avec l'ID {customer_id}.\n"
         )
 
     @staticmethod
     def object_not_found_empty():
         MenuView.console.print(
-            "\n[bold red]Erreur:[/bold red] Merci de choisir un ID valide.\n"
+            "\n[bold red]Erreur: [/bold red] Merci de choisir un ID valide.\n"
         )
 
     @staticmethod
     def event_not_found(event_id):
         MenuView.console.print(
-            f"\n[bold red]Erreur:[/bold red] Aucun événement trouvé avec l'ID {event_id}.\n"
+            f"\n[bold red]Erreur: [/bold red] Aucun événement trouvé avec l'ID {event_id}.\n"
         )
 
     @staticmethod
     def user_not_support(user_id):
         MenuView.console.print(
-            f"\n[bold red]Erreur:[/bold red] L'utilisateur ID {user_id} n'est pas un membre du support.\n"
+            f"\n[bold red]Erreur: [/bold red] L'utilisateur ID {user_id} n'est pas un membre du support.\n"
         )
 
     @staticmethod
     def user_not_found(user_id):
         MenuView.console.print(
-            f"\n[bold red]Erreur:[/bold red] Aucun utilisateur trouvé avec l'ID {user_id}.\n"
+            f"\n[bold red]Erreur: [/bold red] Aucun utilisateur trouvé avec l'ID {user_id}.\n"
         )
 
     @staticmethod
@@ -196,67 +197,67 @@ class MenuView:
     @staticmethod
     def password_missing_lowercase():
         MenuView.console.print(
-            "\n[bold red]Erreur:[/bold red] Le mot de passe doit contenir au moins une lettre minuscule.\n"
+            "\n[bold red]Erreur: [/bold red] Le mot de passe doit contenir au moins une lettre minuscule.\n"
         )
 
     @staticmethod
     def password_missing_number():
         MenuView.console.print(
-            "\n[bold red]Erreur:[/bold red] Le mot de passe doit contenir au moins un chiffre.\n"
+            "\n[bold red]Erreur: [/bold red] Le mot de passe doit contenir au moins un chiffre.\n"
         )
 
     @staticmethod
     def invalid_string():
         MenuView.console.print(
-            "\n[bold red]Erreur:[/bold red] La chaîne de caractères saisie n'est pas valide.\n"
+            "\n[bold red]Erreur: [/bold red] La chaîne de caractères saisie n'est pas valide.\n"
         )
 
     @staticmethod
     def user_role_error():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red] Cet utilisateur est un admin."
+            "[bold red]Erreur: [/bold red] Cet utilisateur est un admin."
         )
 
     @staticmethod
     def user_not_found_error():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red] Cet utilisateur n'existe pas."
+            "[bold red]Erreur: [/bold red] Cet utilisateur n'existe pas."
         )
 
     @staticmethod
     def validate_email_view():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red] Email non valide."
+            "[bold red]Erreur: [/bold red] Email non valide."
         )
 
     @staticmethod
     def validate_phone_view():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red ]Numéro de téléphone non valide."
+            "[bold red]Erreur: [/bold red ]Numéro de téléphone non valide."
         )
 
     @staticmethod
     def validate_attendees_view():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red] Nombre de participants non valide."
+            "[bold red]Erreur: [/bold red] Nombre de participants non valide."
         )
 
     @staticmethod
     def validate_amount_total_view():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red] Montant total non valide."
+            "[bold red]Erreur: [/bold red] Montant total non valide."
         )
 
     @staticmethod
     def validate_amount_due_view():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red] Montant dû non valide."
+            "[bold red]Erreur: [/bold red] Montant dû non valide."
         )
 
     @staticmethod
     def validate_boolean_view():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red] Merci de choisir parmi 'True' ou 'False'."
+            "[bold red]Erreur: [/bold red] Merci de choisir parmi 'True' ou 'False'."
         )
 
     @staticmethod

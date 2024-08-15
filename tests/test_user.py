@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from models.models import User, Base, Role
+
 from controllers.user_controller import UserController
+from models.models import Base, Role, User
 from utils.config import get_test_session, test_engine
 from utils.jwtoken import TokenManager
 

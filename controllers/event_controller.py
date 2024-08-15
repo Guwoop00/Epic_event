@@ -1,13 +1,15 @@
-import sentry_sdk
-from models.models import Event
-from views.event_view import EventView
-from views.menu_view import MenuView
-from utils.validators import DataValidator
-from sqlalchemy.orm import Session
 from datetime import date
 from typing import List, Optional
+
+import sentry_sdk
 from rich.console import Console
+from sqlalchemy.orm import Session
+
+from models.models import Event
 from utils.jwtoken import TokenManager
+from utils.validators import DataValidator
+from views.event_view import EventView
+from views.menu_view import MenuView
 
 
 class EventController:
@@ -16,6 +18,8 @@ class EventController:
     def __init__(self, session: Session):
         """
         Initializes the event controller.
+
+        :param session: SQLAlchemy Session
         """
         self.session = session
         self.event_view = EventView()
@@ -24,9 +28,12 @@ class EventController:
         self.token_manager = TokenManager()
 
     @TokenManager.token_required
-    def create_event(self, user) -> Event:
+    def create_event(self, user) -> Optional[Event]:
         """
         Creates a new event.
+
+        :param user: The user creating the event
+        :return: The created Event object or None if creation fails
         """
         try:
             prompts = self.event_view.get_create_event_prompts()
@@ -60,15 +67,20 @@ class EventController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-        return None
+            print(e)
+            return None
 
     @TokenManager.token_required
     def update_event(self, user) -> Optional[Event]:
         """
         Updates an existing event.
+
+        :param user: The user updating the event
+        :return: The updated Event object or None if the event was not found or update fails
         """
         try:
             prompts = self.event_view.event_view_prompts()
+
             event_id = self.validators.validate_input(prompts["event_id"], self.validators.validate_existing_event_id)
             event = self.get_event(event_id)
 
@@ -83,10 +95,8 @@ class EventController:
                 location = self.validators.validate_input(prompts["location"],
                                                           self.validators.validate_str, allow_empty=True)
                 attendees = self.validators.validate_input(prompts["attendees"],
-                                                           self.validators.validate_int, allow_empty=True)
+                                                           self.validators.validate_attendees, allow_empty=True)
                 notes = self.validators.validate_input(prompts["notes"], self.validators.validate_str, allow_empty=True)
-                contract_id = self.validators.validate_input(prompts["contract_id"],
-                                                             self.validators.validate_id, allow_empty=True)
 
                 if event_name:
                     event.event_name = event_name
@@ -100,8 +110,6 @@ class EventController:
                     event.attendees = attendees
                 if notes:
                     event.notes = notes
-                if contract_id:
-                    event.contract_id = contract_id
 
                 self.session.commit()
                 self.session.refresh(event)
@@ -112,10 +120,14 @@ class EventController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return None
 
     def get_event(self, event_id: int) -> Optional[Event]:
         """
         Retrieves an event by its ID.
+
+        :param event_id: The ID of the event to retrieve
+        :return: The Event object with the specified ID or None if not found
         """
         try:
             return self.session.query(Event).filter(Event.id == event_id).first()
@@ -124,7 +136,7 @@ class EventController:
             sentry_sdk.capture_exception(e)
             return None
 
-    def display_all_events(self):
+    def display_all_events(self) -> None:
         """
         Displays all events.
         """
@@ -136,9 +148,11 @@ class EventController:
             sentry_sdk.capture_exception(e)
 
     @TokenManager.token_required
-    def display_events(self, user):
+    def display_events(self, user) -> None:
         """
         Displays the list of events based on the user's role.
+
+        :param user: The user requesting the display of events
         """
         try:
             if user.role.name.lower() == 'admin':
@@ -158,7 +172,10 @@ class EventController:
 
     def get_admin_filtered_events(self, filter_option: int) -> List[Event]:
         """
-        Get filtered events by choosen option.
+        Get filtered events based on the selected option.
+
+        :param filter_option: The option to filter events
+        :return: A list of filtered Event objects
         """
         try:
             if filter_option == 1:
@@ -172,10 +189,15 @@ class EventController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return []
 
     def get_support_filtered_events(self, filter_option: int, user) -> List[Event]:
         """
-        Get filtered events by choosen option.
+        Get filtered events based on the selected option for support role.
+
+        :param filter_option: The option to filter events
+        :param user: The support user requesting the events
+        :return: A list of filtered Event objects
         """
         try:
             if filter_option == 1:
@@ -185,11 +207,15 @@ class EventController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return []
 
     @TokenManager.token_required
-    def add_support_to_event(self, user) -> None:
+    def add_support_to_event(self, user) -> Optional[Event]:
         """
         Adds support to an event.
+
+        :param user: The user adding support to the event
+        :return: The updated Event object or None if the event was not found or update fails
         """
         try:
             prompts = self.event_view.event_view_prompts()
@@ -206,10 +232,11 @@ class EventController:
                     self.session.refresh(event)
                     self.event_view.event_updated()
                 else:
-                    self.console.print("[bold red]Validation failed. Support contact not added.[/bold red]")
+                    self.event_view.event_not_created
             else:
                 self.event_view.event_not_found()
             return event
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return None

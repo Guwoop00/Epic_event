@@ -1,8 +1,11 @@
 import re
-from views.menu_view import MenuView
-from rich.console import Console
-from models.models import User, Customer, Event, Contract, Role
+from datetime import datetime
 from getpass import getpass
+
+from rich.console import Console
+
+from models.models import Contract, Customer, Event, Role, User
+from views.menu_view import MenuView
 
 
 class DataValidator:
@@ -18,11 +21,9 @@ class DataValidator:
             else:
                 value = input(prompt)
 
-            # Retourner None si l'entrée est vide et allow_empty est True
             if allow_empty and value.strip() == "":
                 return None
 
-            # Valider l'entrée avec la méthode de validation fournie
             if validation_method(value):
                 return value
 
@@ -99,6 +100,16 @@ class DataValidator:
             MenuView.user_not_found(value)
         return False
 
+    def transform_boolean(self, value) -> bool:
+        valid_true = {"oui", "yes", "y"}
+        valid_false = {"non", "no", "n"}
+
+        if value in valid_true:
+            return True
+
+        if value in valid_false:
+            return False
+
     @staticmethod
     def validate_password(password: str) -> bool:
         if len(password) < 8:
@@ -140,39 +151,73 @@ class DataValidator:
 
     @staticmethod
     def validate_attendees(value: int) -> bool:
+        value = int(value)
         if isinstance(value, int) and value >= 0:
             return True
         MenuView.validate_attendees_view()
         return False
 
     @staticmethod
-    def validate_amount_total(amount_total) -> bool:
-        if isinstance(amount_total, str):
+    def convert_to_float(value):
+        """Convertit une chaîne de caractères en float, ou renvoie None si la conversion échoue."""
+        if isinstance(value, str):
             try:
-                amount_total = float(amount_total.replace(',', '.'))
+                return float(value.replace(',', '.'))
             except ValueError:
-                MenuView.validate_amount_total_view()
-                return False
+                return None
+        return value
+
+    @staticmethod
+    def validate_amount_total(amount_total) -> bool:
+        amount_total = DataValidator.convert_to_float(amount_total)
+        print(amount_total)
 
         if isinstance(amount_total, (int, float)) and amount_total >= 0.0:
             return True
+
         MenuView.validate_amount_total_view()
         return False
 
     @staticmethod
     def validate_amount_due(amount_due, amount_total) -> bool:
-        try:
-            if isinstance(amount_due, str):
-                amount_due = float(amount_due.replace(',', '.'))
-            if isinstance(amount_total, str):
-                amount_total = float(amount_total.replace(',', '.'))
-        except ValueError:
-            MenuView.validate_amount_due_view()
-            return False
+        amount_due = DataValidator.convert_to_float(amount_due)
+        amount_total = DataValidator.convert_to_float(amount_total)
+        print(amount_total)
+        print(amount_due)
 
-        if isinstance(amount_due, (int, float)) and isinstance(amount_total, (int, float)):
-            if amount_due >= 0.0 and amount_due <= amount_total:
-                return True
+        if 0.0 <= amount_due <= amount_total:
+            return True
 
         MenuView.validate_amount_due_view()
         return False
+
+    @staticmethod
+    def validate_boolean(value) -> bool:
+        value = value.strip().lower()
+
+        accepted_values = {"oui", "yes", "y", "non", "no", "n"}
+
+        if value in accepted_values:
+            return True
+
+        else:
+            MenuView.validate_boolean_view()
+            raise ValueError("Invalid boolean value")
+
+    @staticmethod
+    def validate_date(value: str) -> bool:
+        """
+        Valide une date sous le format jj/mm/aaaa.
+        :param value: Chaîne de caractères représentant une date.
+        :return: True si la date est valide, sinon lève une exception ValueError.
+        """
+        date_format = "%d/%m/%Y"
+
+        if not re.match(r"^\d{2}/\d{2}/\d{4}$", value):
+            raise ValueError(f"Date format invalid: '{value}'. Expected format: 'jj/mm/aaaa'.")
+
+        try:
+            datetime.strptime(value, date_format)
+            return True
+        except ValueError:
+            raise ValueError(f"Invalid date: '{value}'. Please enter a valid date in the format 'jj/mm/aaaa'.")

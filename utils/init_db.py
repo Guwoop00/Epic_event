@@ -1,14 +1,15 @@
-from argon2 import PasswordHasher
-from sqlalchemy.exc import SQLAlchemyError
-from config import Base, SessionLocal, engine
-from models.models import User, Role
-from validators import DataValidator
-from views.user_view import UserView
+import importlib
 from getpass import getpass
 
+from argon2 import PasswordHasher
+from config import Base, SessionLocal, engine
+from sqlalchemy.exc import SQLAlchemyError
+from validators import DataValidator
 
-import importlib
 import views.user_view
+from models.models import Role, User
+from views.user_view import UserView
+
 importlib.reload(views.user_view)
 
 

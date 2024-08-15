@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from models.models import Customer, Base
+
 from controllers.customer_controller import CustomerController
+from models.models import Base, Customer
 from utils.config import get_test_session, test_engine
 from utils.jwtoken import TokenManager
 

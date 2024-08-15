@@ -1,12 +1,14 @@
-import jwt
 import datetime
+from functools import wraps
+from typing import Callable, Optional
+
+import jwt
 import sentry_sdk
-from views.menu_view import MenuView
 from rich.console import Console
+
 from models.models import User
 from utils.config import SECRET_KEY
-from functools import wraps
-from typing import Optional, Callable
+from views.menu_view import MenuView
 
 
 class TokenManager:

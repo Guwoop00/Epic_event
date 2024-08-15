@@ -1,15 +1,17 @@
+from datetime import date
+from typing import Optional
+
 import sentry_sdk
+from sqlalchemy.orm import Session
+
 from models.models import Customer
+from utils.jwtoken import TokenManager
+from utils.validators import DataValidator
 from views.customer_view import CustomerView
 from views.menu_view import MenuView
-from utils.validators import DataValidator
-from sqlalchemy.orm import Session
-from utils.jwtoken import TokenManager
-from datetime import date
 
 
 class CustomerController:
-
     def __init__(self, session: Session):
         """
         Initializes the customer controller.
@@ -23,9 +25,12 @@ class CustomerController:
         self.token_manager = TokenManager()
 
     @TokenManager.token_required
-    def create_customer(self, user):
+    def create_customer(self, user) -> Optional[Customer]:
         """
         Creates a new customer.
+
+        :param user: The user creating the customer
+        :return: The created Customer object or None if creation fails
         """
         try:
             prompts = self.customer_view.get_create_customer_prompts()
@@ -56,9 +61,12 @@ class CustomerController:
             return None
 
     @TokenManager.token_required
-    def update_customer(self, user):
+    def update_customer(self, user) -> Optional[Customer]:
         """
         Updates an existing customer.
+
+        :param user: The user updating the customer
+        :return: The updated Customer object or None if the customer was not found or update fails
         """
         try:
             prompts = self.customer_view.customer_view_prompts()
@@ -96,18 +104,23 @@ class CustomerController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return None
 
-    def get_customer(self, customer_id: int):
+    def get_customer(self, customer_id: int) -> Optional[Customer]:
         """
         Retrieves a customer by their ID.
+
+        :param customer_id: The ID of the customer to retrieve
+        :return: The Customer object with the specified ID or None if not found
         """
         try:
             return self.session.query(Customer).filter(Customer.id == customer_id).first()
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return None
 
-    def display_all_customers(self):
+    def display_all_customers(self) -> None:
         """
         Displays the list of customers.
         """

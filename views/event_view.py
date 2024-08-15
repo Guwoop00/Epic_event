@@ -71,6 +71,9 @@ class EventView:
     def event_created(self):
         self.console.print("\n[bold green]Événement créé avec succès.[/bold green]\n")
 
+    def event_not_created(self):
+        self.console.print("\n[bold red]Validation failed. Support contact not added.[/bold red]\n")
+
     def event_updated(self):
         self.console.print("\n[bold green]Événement mis à jour avec succès.[/bold green]\n")
 

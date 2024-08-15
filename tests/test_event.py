@@ -1,10 +1,11 @@
 import unittest
+from datetime import date
 from unittest.mock import MagicMock, patch
-from models.models import Event, Base
+
 from controllers.event_controller import EventController
+from models.models import Base, Event
 from utils.config import get_test_session, test_engine
 from utils.jwtoken import TokenManager
-from datetime import date
 
 
 class TestEventController(unittest.TestCase):

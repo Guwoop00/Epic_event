@@ -1,19 +1,22 @@
+from datetime import date
+from typing import List, Optional
+
 import sentry_sdk
-from models.models import Contract
 from sqlalchemy.orm import Session
+
+from models.models import Contract
+from utils.jwtoken import TokenManager
+from utils.validators import DataValidator
 from views.contract_view import ContractView
 from views.menu_view import MenuView
-from utils.validators import DataValidator
-from typing import Optional, List
-from datetime import date
-from utils.jwtoken import TokenManager
 
 
 class ContractController:
-
     def __init__(self, session: Session):
         """
         Initializes the contract controller.
+
+        :param session: SQLAlchemy session object
         """
         self.session = session
         self.contract_view = ContractView()
@@ -25,6 +28,9 @@ class ContractController:
     def create_contract(self, user) -> Optional[Contract]:
         """
         Creates a new contract.
+
+        :param user: The user creating the contract
+        :return: The created Contract object or None if creation fails
         """
         try:
             prompts = self.contract_view.get_create_contract_prompts()
@@ -32,15 +38,18 @@ class ContractController:
                                                          self.validators.validate_existing_customer_id)
             amount_total = self.validators.validate_input(prompts["amount_total"],
                                                           self.validators.validate_amount_total)
-            amount_due = self.validators.validate_input(prompts["amount_due"], self.validators.validate_amount_due)
+            amount_due = self.validators.validate_input(prompts["amount_due"],
+                                                        lambda amount_due:
+                                                        self.validators.validate_amount_due(amount_due, amount_total))
             is_signed = self.validators.validate_input(prompts["is_signed"], self.validators.validate_boolean)
+            is_signed_bool = self.validators.transform_boolean(is_signed)
 
             contract = Contract(
                 customer_id=customer_id,
                 amount_total=amount_total,
                 amount_due=amount_due,
                 creation_date=date.today(),
-                is_signed=is_signed,
+                is_signed=is_signed_bool,
             )
 
             self.session.add(contract)
@@ -51,11 +60,15 @@ class ContractController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return None
 
     @TokenManager.token_required
     def update_contract(self, user) -> Optional[Contract]:
         """
         Updates an existing contract.
+
+        :param user: The user updating the contract
+        :return: The updated Contract object or None if the contract was not found or update fails
         """
         try:
             prompts = self.contract_view.contract_view_prompts()
@@ -65,16 +78,20 @@ class ContractController:
             contract = self.get_contract(contract_id)
 
             if contract:
-                prompts = self.contract_view.get_update_user_prompts()
+                prompts = self.contract_view.get_update_contract_prompts()
                 customer_id = self.validators.validate_input(prompts["customer_id"],
                                                              self.validators.validate_existing_customer_id,
                                                              allow_empty=True)
                 amount_total = self.validators.validate_input(prompts["amount_total"],
-                                                              self.validators.validate_amount_total, allow_empty=True)
+                                                              self.validators.validate_amount_total,
+                                                              allow_empty=True)
                 amount_due = self.validators.validate_input(prompts["amount_due"],
-                                                            self.validators.validate_amount_due, allow_empty=True)
+                                                            lambda amount_due:
+                                                            self.validators.validate_amount_due
+                                                            (amount_due, amount_total), allow_empty=True)
                 is_signed = self.validators.validate_input(prompts["is_signed"],
                                                            self.validators.validate_boolean, allow_empty=True)
+                is_signed_bool = self.validators.transform_boolean(is_signed)
 
                 if customer_id:
                     contract.customer_id = customer_id
@@ -83,7 +100,7 @@ class ContractController:
                 if amount_due:
                     contract.amount_due = amount_due
                 if is_signed:
-                    contract.is_signed = is_signed
+                    contract.is_signed = is_signed_bool
 
                 self.session.commit()
                 self.session.refresh(contract)
@@ -94,11 +111,14 @@ class ContractController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return None
 
     @TokenManager.token_required
-    def display_contracts(self, user):
+    def display_contracts(self, user) -> None:
         """
         Display filtered contracts.
+
+        :param user: The user requesting the display of contracts
         """
         try:
             title, options = self.menu_view.filtered_contracts_menu_options()
@@ -111,7 +131,10 @@ class ContractController:
 
     def get_filtered_contracts(self, filter_option: int) -> List[Contract]:
         """
-        Get filtered contracts.
+        Get filtered contracts based on the filter option.
+
+        :param filter_option: The option to filter contracts
+        :return: A list of Contract objects that match the filter criteria
         """
         try:
             if filter_option == 1:
@@ -125,18 +148,23 @@ class ContractController:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return []
 
     def get_contract(self, contract_id: int) -> Optional[Contract]:
         """
-        Gets a contratc by ID.
+        Gets a contract by ID.
+
+        :param contract_id: The ID of the contract to retrieve
+        :return: The Contract object with the specified ID or None if not found
         """
         try:
             return self.session.query(Contract).filter(Contract.id == contract_id).first()
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
+            return None
 
-    def display_all_contracts(self):
+    def display_all_contracts(self) -> None:
         """
         Display all contracts.
         """

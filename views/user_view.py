@@ -1,5 +1,6 @@
-from rich.console import Console
 from getpass import getpass
+
+from rich.console import Console
 
 
 class UserView:
@@ -43,7 +44,6 @@ class UserView:
 
     @staticmethod
     def unauthenticated_user_view():
-        print("ici")
         UserView.console.print("\n[bold red]Utilisateur ou mot de passe incorrect ![/bold red]\n")
 
     @staticmethod
@@ -56,7 +56,7 @@ class UserView:
 
     @staticmethod
     def access_granted(token):
-        UserView.console.print(f"\n[bold cornflower_blue]Token:[/bold cornflower_blue] {token}")
+        UserView.console.print(f"\n[bold cornflower_blue]Token: [/bold cornflower_blue] {token}")
 
     @staticmethod
     def user_created():
@@ -76,7 +76,7 @@ class UserView:
 
     @staticmethod
     def table_creation_error(e):
-        UserView.console.print(f"\n[bold red]Erreur lors de la création des tables : {e}[/bold red]\n")
+        UserView.console.print(f"\n[bold red]Erreur lors de la création des tables: {e}[/bold red]\n")
 
     @staticmethod
     def role_created_successfull(role_name):
@@ -84,7 +84,7 @@ class UserView:
 
     @staticmethod
     def role_creation_error(e):
-        UserView.console.print(f"\n[bold red]Erreur lors de la création des rôles : {e}[/bold red]\n")
+        UserView.console.print(f"\n[bold red]Erreur lors de la création des rôles: {e}[/bold red]\n")
 
     @staticmethod
     def admin_user_created_successfull():
@@ -92,7 +92,7 @@ class UserView:
 
     @staticmethod
     def admin_user_created_error(e):
-        UserView.console.print(f"\n[bold red]Erreur lors de la création de l'utilisateur admin : {e}[/bold red]\n")
+        UserView.console.print(f"\n[bold red]Erreur lors de la création de l'utilisateur admin: {e}[/bold red]\n")
 
     @staticmethod
     def prompt_change_password_view():
@@ -101,3 +101,7 @@ class UserView:
     @staticmethod
     def password_updated_successfull():
         UserView.console.print("\n[bold green]Mot de passe mis à jour avec succès.[/bold green]\n")
+
+    @staticmethod
+    def logout_view():
+        UserView.console.print("\n[bold green]Utilisateur déconnecté.[/bold green]\n")

@@ -1,12 +1,14 @@
+from typing import Callable, Dict, Optional
+
 import sentry_sdk
 from argon2 import PasswordHasher
-from views.menu_view import MenuView
-from views.user_view import UserView
-from models.models import User
 from sqlalchemy.orm import Session
+
+from models.models import User
 from utils.jwtoken import TokenManager
 from utils.validators import DataValidator
-from typing import Optional, Dict, Callable
+from views.menu_view import MenuView
+from views.user_view import UserView
 
 
 class UserController:
@@ -14,6 +16,8 @@ class UserController:
     def __init__(self, session: Session):
         """
         Initializes the user controller.
+
+        :param session: SQLAlchemy Session
         """
         self.session = session
         self.menu_view = MenuView()
@@ -43,6 +47,10 @@ class UserController:
     def auth_user(self, email: str, password: str) -> Optional[Dict[str, str]]:
         """
         Authenticates a user with email and password.
+
+        :param email: The email of the user
+        :param password: The password of the user
+        :return: A dictionary with user details if authentication is successful, None otherwise
         """
         try:
             user = self.get_user_by_email(email)
@@ -64,6 +72,9 @@ class UserController:
     def create_user(self, user) -> Optional[User]:
         """
         Creates a new user.
+
+        :param user: The user creating the new user (used for role verification)
+        :return: The created User object or None if creation fails
         """
         try:
             prompts = self.user_view.get_create_user_prompts()
@@ -96,6 +107,9 @@ class UserController:
     def update_user(self, user) -> Optional[User]:
         """
         Updates an existing user.
+
+        :param user: The user updating the existing user (used for role verification)
+        :return: The updated User object or None if the user was not found or update fails
         """
         try:
             prompts = self.user_view.user_view_prompts()
@@ -137,6 +151,9 @@ class UserController:
     def delete_user(self, user) -> Optional[User]:
         """
         Deletes an existing user.
+
+        :param user: The user performing the delete action (used for role verification)
+        :return: The deleted User object or None if the user was not found or deletion fails
         """
         try:
             prompts = self.user_view.user_view_prompts()
@@ -156,9 +173,11 @@ class UserController:
             sentry_sdk.capture_exception(e)
             return None
 
-    def database(self, database_actions: Dict[int, Callable]) -> None:
+    def database(self, database_actions: Dict[int, Callable[[], None]]) -> None:
         """
         Displays the database management menu.
+
+        :param database_actions: A dictionary of menu options and corresponding action functions
         """
         try:
             menu_option = self.menu_view.database_menu_options()
@@ -171,6 +190,8 @@ class UserController:
     def logout(self, user) -> None:
         """
         Logs out the user.
+
+        :param user: The user to log out
         """
         try:
             self.token_manager.clear_cache(user.id)

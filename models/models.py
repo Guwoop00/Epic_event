@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, DateTime, Boolean
-from sqlalchemy.orm import relationship
-from config import Base
 from datetime import date, datetime
+
+from config import Base
+from sqlalchemy import (Boolean, Column, Date, DateTime, Float, ForeignKey,
+                        Integer, String)
+from sqlalchemy.orm import relationship
 
 
 class Role(Base):

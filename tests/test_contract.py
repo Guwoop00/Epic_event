@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from models.models import Contract, Base
+
 from controllers.contract_controller import ContractController
+from models.models import Base, Contract
 from utils.config import get_test_session, test_engine
 from utils.jwtoken import TokenManager
 
@@ -38,28 +39,30 @@ class TestContractController(unittest.TestCase):
     def test_create_contract(self):
         """Test contract creation with mocked user input"""
         user = MagicMock()
-        self.mock_validator.validate_input.side_effect = [1, 1000.0, 500.0, True]
+        self.mock_validator.validate_input.side_effect = [1, 1000.0, 500.0, "y"]
 
         with patch.object(self.token_manager, 'get_tokens', return_value="fake_access_token"):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
-                    contract = self.contract_controller.create_contract(user)
-                    self.assertIsNotNone(contract)
-                    self.assertEqual(contract.amount_total, 1000.0)
+                    with patch.object(self.mock_validator, 'transform_boolean', return_value=True):
+                        contract = self.contract_controller.create_contract(user)
+                        self.assertIsNotNone(contract)
+                        self.assertEqual(contract.amount_total, 1000.0)
 
     def test_update_contract(self):
         """Test contract update with mocked user input"""
         user = MagicMock()
         contract = self.create_contract()
-        self.mock_validator.validate_input.side_effect = [1, 2, 1500.0, 750.0, True]
+        self.mock_validator.validate_input.side_effect = [1, 2, 1500.0, 750.0, "y"]
 
         with patch.object(self.token_manager, 'get_tokens', return_value="fake_access_token"):
             with patch.object(self.token_manager, 'check_token', return_value=True):
                 with patch.object(self.token_manager, 'validate_token', return_value=True):
-                    updated_contract = self.contract_controller.update_contract(user)
-                    self.assertIsNotNone(contract)
-                    self.assertIsNotNone(updated_contract)
-                    self.assertEqual(updated_contract.amount_total, 1500.0)
+                    with patch.object(self.mock_validator, 'transform_boolean', return_value=True):
+                        updated_contract = self.contract_controller.update_contract(user)
+                        self.assertIsNotNone(contract)
+                        self.assertIsNotNone(updated_contract)
+                        self.assertEqual(updated_contract.amount_total, 1500.0)
 
     def test_get_filtered_contracts(self):
         """Test getting filtered contracts"""
