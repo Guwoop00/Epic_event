@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-import sentry_sdk
+from sentry_config import sentry_exception_handler
 from sqlalchemy.orm import Session
 
 from models.models import Customer
@@ -24,6 +24,7 @@ class CustomerController:
         self.validators = DataValidator(session)
         self.token_manager = TokenManager()
 
+    @sentry_exception_handler
     @TokenManager.token_required
     def create_customer(self, user) -> Optional[Customer]:
         """
@@ -32,34 +33,30 @@ class CustomerController:
         :param user: The user creating the customer
         :return: The created Customer object or None if creation fails
         """
-        try:
-            prompts = self.customer_view.get_create_customer_prompts()
+        prompts = self.customer_view.get_create_customer_prompts()
 
-            full_name = self.validators.validate_input(prompts["full_name"], self.validators.validate_str)
-            email = self.validators.validate_input(prompts["email"], self.validators.validate_email)
-            phone = self.validators.validate_input(prompts["phone"], self.validators.validate_phone)
-            company_name = self.validators.validate_input(prompts["company_name"], self.validators.validate_str)
-            creation_date = date.today()
+        full_name = self.validators.validate_input(prompts["full_name"], self.validators.validate_str)
+        email = self.validators.validate_input(prompts["email"], self.validators.validate_email)
+        phone = self.validators.validate_input(prompts["phone"], self.validators.validate_phone)
+        company_name = self.validators.validate_input(prompts["company_name"], self.validators.validate_str)
+        creation_date = date.today()
 
-            customer = Customer(
-                full_name=full_name,
-                email=email,
-                phone=phone,
-                company_name=company_name,
-                creation_date=creation_date,
-                sales_contact_id=user.id,
-            )
+        customer = Customer(
+            full_name=full_name,
+            email=email,
+            phone=phone,
+            company_name=company_name,
+            creation_date=creation_date,
+            sales_contact_id=user.id,
+        )
 
-            self.session.add(customer)
-            self.session.commit()
-            self.session.refresh(customer)
-            self.customer_view.customer_created()
-            return customer
+        self.session.add(customer)
+        self.session.commit()
+        self.session.refresh(customer)
+        self.customer_view.customer_created()
+        return customer
 
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-            return None
-
+    @sentry_exception_handler
     @TokenManager.token_required
     def update_customer(self, user) -> Optional[Customer]:
         """
@@ -68,44 +65,42 @@ class CustomerController:
         :param user: The user updating the customer
         :return: The updated Customer object or None if the customer was not found or update fails
         """
-        try:
-            prompts = self.customer_view.customer_view_prompts()
-            customer_id = self.validators.validate_input(prompts["customer_id"], lambda value:
-                                                         self.validators.validate_existing_my_customer_id
-                                                         (value, user.id))
-            customer = self.get_customer(customer_id)
 
-            if customer:
-                prompts = self.customer_view.get_update_customer_prompts()
-                full_name = self.validators.validate_input(prompts["full_name"],
-                                                           self.validators.validate_str, allow_empty=True)
-                email = self.validators.validate_input(prompts["email"],
-                                                       self.validators.validate_email, allow_empty=True)
-                phone = self.validators.validate_input(prompts["phone"], self.validators.validate_str, allow_empty=True)
-                company_name = self.validators.validate_input(prompts["company_name"],
-                                                              self.validators.validate_str, allow_empty=True)
+        prompts = self.customer_view.customer_view_prompts()
+        customer_id = self.validators.validate_input(prompts["customer_id"], lambda value:
+                                                     self.validators.validate_existing_my_customer_id
+                                                     (value, user.id))
+        customer = self.get_customer(customer_id)
 
-                if full_name:
-                    customer.full_name = full_name
-                if email:
-                    customer.email = email
-                if phone:
-                    customer.phone = phone
-                if company_name:
-                    customer.company_name = company_name
+        if customer:
+            prompts = self.customer_view.get_update_customer_prompts()
+            full_name = self.validators.validate_input(prompts["full_name"],
+                                                       self.validators.validate_str, allow_empty=True)
+            email = self.validators.validate_input(prompts["email"],
+                                                   self.validators.validate_email, allow_empty=True)
+            phone = self.validators.validate_input(prompts["phone"], self.validators.validate_str, allow_empty=True)
+            company_name = self.validators.validate_input(prompts["company_name"],
+                                                          self.validators.validate_str, allow_empty=True)
 
-                customer.last_update = date.today()
-                self.session.commit()
-                self.session.refresh(customer)
-                self.customer_view.customer_updated()
-            else:
-                self.customer_view.customer_not_found()
-            return customer
+            if full_name:
+                customer.full_name = full_name
+            if email:
+                customer.email = email
+            if phone:
+                customer.phone = phone
+            if company_name:
+                customer.company_name = company_name
+            customer.last_update = date.today()
+            self.session.commit()
+            self.session.refresh(customer)
+            self.customer_view.customer_updated()
 
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-            return None
+        else:
+            self.customer_view.customer_not_found()
 
+        return customer
+
+    @sentry_exception_handler
     def get_customer(self, customer_id: int) -> Optional[Customer]:
         """
         Retrieves a customer by their ID.
@@ -113,20 +108,12 @@ class CustomerController:
         :param customer_id: The ID of the customer to retrieve
         :return: The Customer object with the specified ID or None if not found
         """
-        try:
-            return self.session.query(Customer).filter(Customer.id == customer_id).first()
+        return self.session.query(Customer).filter(Customer.id == customer_id).first()
 
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-            return None
-
+    @sentry_exception_handler
     def display_all_customers(self) -> None:
         """
         Displays the list of customers.
         """
-        try:
-            customers = self.session.query(Customer).all()
-            self.customer_view.display_customers_view(customers)
-
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
+        customers = self.session.query(Customer).all()
+        self.customer_view.display_customers_view(customers)

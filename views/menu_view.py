@@ -281,7 +281,7 @@ class MenuView:
     @staticmethod
     def check_token_view():
         MenuView.console.print(
-            "[bold red]Token invalide ou expiré.[/bold red]"
+            "[bold red]Erreur:[/bold red]Token invalide ou expiré."
         )
 
     @staticmethod
@@ -299,5 +299,5 @@ class MenuView:
     @staticmethod
     def invalid_token_view():
         MenuView.console.print(
-            "[bold red]Erreur:[/bold red] Token invalide ou expiré.[/bold red]"
+            "[bold red]Erreur:[/bold red] Token invalide ou expiré."
         )

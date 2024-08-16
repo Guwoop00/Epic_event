@@ -3,9 +3,9 @@ from functools import wraps
 from typing import Callable, Optional
 
 import jwt
-import sentry_sdk
 from rich.console import Console
 
+from sentry_config import sentry_exception_handler
 from models.models import User
 from utils.config import SECRET_KEY
 from views.menu_view import MenuView
@@ -42,19 +42,18 @@ class TokenManager:
             'user_id': user.id,
             'user_email': user.email,
             'user_role': user.role.name,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=1)
         }
         return jwt.encode(payload, self.SECRET_KEY, algorithm='HS256')
 
+    @sentry_exception_handler
     def decode_token(self, token: str) -> Optional[int]:
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=['HS256'])
             return payload['user_id']
-        except jwt.ExpiredSignatureError as e:
-            sentry_sdk.capture_exception(e)
+        except jwt.ExpiredSignatureError:
             return None
-        except jwt.InvalidTokenError as e:
-            sentry_sdk.capture_exception(e)
+        except jwt.InvalidTokenError:
             return None
 
     def validate_token(self, token: str) -> Optional[int]:

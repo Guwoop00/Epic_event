@@ -5,6 +5,7 @@ from argon2 import PasswordHasher
 from sqlalchemy.orm import Session
 
 from models.models import User
+from sentry_config import sentry_exception_handler
 from utils.jwtoken import TokenManager
 from utils.validators import DataValidator
 from views.menu_view import MenuView
@@ -52,22 +53,20 @@ class UserController:
         :param password: The password of the user
         :return: A dictionary with user details if authentication is successful, None otherwise
         """
-        try:
-            user = self.get_user_by_email(email)
+        user = self.get_user_by_email(email)
 
-            if not user:
-                self.user_view.user_not_found()
-                return None
+        if not user:
+            self.user_view.user_not_found()
+            return None
 
-            if not self.password_hasher.verify(user.password, password):
-                self.user_view.incorrect_password()
-                return None
+        if not self.password_hasher.verify(user.password, password):
+            self.user_view.incorrect_password()
+            return None
 
-            return user
+        print(User)
+        return user
 
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-
+    @sentry_exception_handler
     @TokenManager.token_required
     def create_user(self, user) -> Optional[User]:
         """
@@ -76,32 +75,28 @@ class UserController:
         :param user: The user creating the new user (used for role verification)
         :return: The created User object or None if creation fails
         """
-        try:
-            prompts = self.user_view.get_create_user_prompts()
-            full_name = self.validators.validate_input(prompts["full_name"],
-                                                       self.validators.validate_str)
-            email = self.validators.validate_input(prompts["email"],
-                                                   self.validators.validate_email)
-            password = self.validators.validate_input(prompts["password"],
-                                                      self.validators.validate_password)
-            role_id = self.validators.validate_input(prompts["role_id"],
-                                                     self.validators.validate_role_id)
-            hashed_password = self.hash_password(password)
+        prompts = self.user_view.get_create_user_prompts()
+        full_name = self.validators.validate_input(prompts["full_name"],
+                                                   self.validators.validate_str)
+        email = self.validators.validate_input(prompts["email"],
+                                               self.validators.validate_email)
+        password = self.validators.validate_input(prompts["password"],
+                                                  self.validators.validate_password)
+        role_id = self.validators.validate_input(prompts["role_id"],
+                                                 self.validators.validate_role_id)
+        hashed_password = self.hash_password(password)
 
-            user = User(full_name=full_name,
-                        email=email,
-                        password=hashed_password,
-                        role_id=role_id
-                        )
+        user = User(full_name=full_name,
+                    email=email,
+                    password=hashed_password,
+                    role_id=role_id
+                    )
 
-            self.session.add(user)
-            self.session.commit()
-            self.session.refresh(user)
-            self.user_view.user_created()
-            return user
-
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        self.user_view.user_created()
+        return user
 
     @TokenManager.token_required
     def update_user(self, user) -> Optional[User]:

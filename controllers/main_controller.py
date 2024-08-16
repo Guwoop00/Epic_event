@@ -1,6 +1,6 @@
 from typing import Callable, Dict
 
-import sentry_sdk
+from sentry_config import sentry_exception_handler
 from rich.console import Console
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -91,50 +91,42 @@ class MainController:
             }
         return action_map
 
+    @sentry_exception_handler
     def login_menu(self) -> None:
         """
         Displays the login menu and handles login actions.
         """
-        try:
-            menu_option = self.menu_view.login_menu_options()
-            self.menu_view.display_menu(menu_option, self.menu_actions)
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
+        menu_option = self.menu_view.login_menu_options()
+        self.menu_view.display_menu(menu_option, self.menu_actions)
 
+    @sentry_exception_handler
     def main_menu(self) -> None:
         """
         Displays the main menu after user authentication.
         """
-        try:
-            username, password = self.user_view.input_login_view()
-            user = self.user_controller.auth_user(username, password)
-            if user:
-                access_token = self.token_manager.create_token(user)
-                self.token_manager.store_tokens(user.id, access_token)
-                user_verified = self.token_manager.validate_token(access_token)
+        username, password = self.user_view.input_login_view()
+        user = self.user_controller.auth_user(username, password)
 
-                if user_verified:
-                    self.user_view.authenticated_user_view()
-                    role = user.role.name.lower()
-                    menu_method_name = f"{role}_menu_options"
-                    menu_option = getattr(self.menu_view, menu_method_name)()
-                    action_map = self.build_action_map(role, user)
-                    self.menu_view.display_menu(menu_option, action_map)
-                else:
-                    self.user_view.unauthenticated_user_view()
-                    self.login_menu()
+        if user:
+            access_token = self.token_manager.create_token(user)
+            self.token_manager.store_tokens(user.id, access_token)
+            user_verified = self.token_manager.validate_token(access_token)
+
+            if user_verified:
+                self.user_view.authenticated_user_view()
+                role = user.role.name.lower()
+                menu_method_name = f"{role}_menu_options"
+                menu_option = getattr(self.menu_view, menu_method_name)()
+                action_map = self.build_action_map(role, user)
+                self.menu_view.display_menu(menu_option, action_map)
             else:
                 self.user_view.unauthenticated_user_view()
                 self.login_menu()
-
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
+        else:
+            self.user_view.unauthenticated_user_view()
             self.login_menu()
 
 
 if __name__ == "__main__":
-    try:
-        main_controller = MainController()
-        main_controller.login_menu()
-    except Exception as e:
-        sentry_sdk.capture_exception(e)
+    main_controller = MainController()
+    main_controller.login_menu()
