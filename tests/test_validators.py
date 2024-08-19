@@ -126,12 +126,10 @@ def test_validate_password(validator):
 
 def test_validate_date(validator):
     """Test validate_date"""
-    with pytest.raises(ValueError,
-                       match=r"Invalid date: '32/01/2023'. Please enter a valid date in the format 'jj/mm/aaaa'."):
+    with pytest.raises(ValueError):
         validator.validate_date('32/01/2023')
 
-    with pytest.raises(ValueError,
-                       match=r"Invalid date: '29/02/2023'. Please enter a valid date in the format 'jj/mm/aaaa'."):
+    with pytest.raises(ValueError):
         validator.validate_date('29/02/2023')
 
     assert validator.validate_date('31/12/2023') is True

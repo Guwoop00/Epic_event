@@ -4,6 +4,7 @@ from getpass import getpass
 from argon2 import PasswordHasher
 from config import Base, SessionLocal, engine
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 from validators import DataValidator
 
 import views.user_view
@@ -13,8 +14,8 @@ from views.user_view import UserView
 importlib.reload(views.user_view)
 
 
-def init_db():
-    """Creates the database tables."""
+def init_db() -> None:
+    """Creates the database tables and handles any SQLAlchemy errors."""
     try:
         Base.metadata.create_all(bind=engine)
         UserView.table_created_successfull()
@@ -22,8 +23,8 @@ def init_db():
         UserView.table_creation_error(e)
 
 
-def create_roles(session):
-    """Creates the default roles: Admin, Support, and Sales."""
+def create_roles(session: Session) -> None:
+    """Creates the default roles: Admin, Support, and Sales in the database if they do not exist."""
     try:
         roles = ["admin", "support", "sales"]
         for role_name in roles:
@@ -37,8 +38,8 @@ def create_roles(session):
         UserView.role_creation_error(e)
 
 
-def create_admin_user(session):
-    """Creates a default admin user."""
+def create_admin_user(session: Session) -> str:
+    """Creates a default admin user in the database and returns the admin's email."""
     ph = PasswordHasher()
     try:
         existing_user = session.query(User).filter(User.email == "admin@ex.com").first()
@@ -63,9 +64,11 @@ def create_admin_user(session):
 
     except SQLAlchemyError as e:
         UserView.admin_user_created_error(e)
+        return ""
 
 
-def prompt_change_password(session, email):
+def prompt_change_password(session: Session, email: str) -> None:
+    """Prompts the admin user to change the password and updates it in the database."""
     user = session.query(User).filter(User.email == email).first()
     UserView.prompt_change_password_view()
     new_password = getpass()
