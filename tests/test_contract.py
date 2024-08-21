@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 
-def test_create_contract(contract_controller, test_login_required, mocker):
+def test_create_contract(contract_controller, login_required_mock, mocker):
     user = MagicMock()
     contract_controller.validators.validate_input.side_effect = [1, 1000.0, 500.0, "y"]
     mock_transform_boolean = mocker.patch.object(contract_controller.validators, 'transform_boolean', return_value=True)
@@ -12,7 +12,7 @@ def test_create_contract(contract_controller, test_login_required, mocker):
     mock_transform_boolean.assert_called_once()
 
 
-def test_update_contract(contract_controller, create_contract, test_login_required, mocker):
+def test_update_contract(contract_controller, create_contract, login_required_mock, mocker):
     user = MagicMock()
     contract = create_contract()
     contract_controller.validators.validate_input.side_effect = [1, 2, 1500.0, 750.0, "y"]

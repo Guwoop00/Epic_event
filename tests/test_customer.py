@@ -1,7 +1,8 @@
 
 
-def test_create_customer(customer_controller, test_login_required, mocker):
-    user = mocker.MagicMock(id=1)
+def test_create_customer(customer_controller, login_required_mock, mocker, create_mock_user):
+    user = create_mock_user(user_id=1, email="test@example.com",
+                            full_name="Test User", password="hashed_password")
 
     mocker.patch.object(customer_controller.validators, 'validate_input', side_effect=[
         'John Doe', 'john.doe@example.com', '1234567890', 'Doe Inc.', 1
@@ -12,7 +13,7 @@ def test_create_customer(customer_controller, test_login_required, mocker):
     assert customer.full_name == 'John Doe'
 
 
-def test_update_customer(customer_controller, create_mock_customer, test_login_required, mocker):
+def test_update_customer(customer_controller, create_mock_customer, login_required_mock, mocker):
     user = mocker.MagicMock()
 
     customer = create_mock_customer(full_name='Jane Doe', email='jane.doe@example.com',

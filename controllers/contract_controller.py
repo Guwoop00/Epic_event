@@ -70,7 +70,7 @@ class ContractController:
         prompts = self.contract_view.contract_view_prompts()
         contract_id = self.validators.validate_input(prompts["contract_id"], lambda value:
                                                      self.validators.validate_existing_my_contract_id
-                                                     (value, user.id))
+                                                     (value, user))
         contract = self.get_contract(contract_id)
 
         if contract:

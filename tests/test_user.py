@@ -1,5 +1,6 @@
 import pytest
 from argon2.exceptions import VerifyMismatchError
+from jwtoken import TokenManager
 
 
 def test_hash_password(user_controller):
@@ -46,7 +47,7 @@ def test_auth_user_incorrect_password(user_controller, create_mock_user):
     assert user is None
 
 
-def test_create_user(user_controller, create_authenticated_user, test_login_required, mocker):
+def test_create_user(user_controller, create_authenticated_user, login_required_mock, mocker):
     authenticated_user = create_authenticated_user()
     user_controller.validators.validate_input.side_effect = ['Test User', 'test@example.com', 'password', 1]
 
@@ -58,7 +59,7 @@ def test_create_user(user_controller, create_authenticated_user, test_login_requ
     user_controller.session.commit()
 
 
-def test_update_user(user_controller, create_authenticated_user, test_login_required):
+def test_update_user(user_controller, create_authenticated_user, login_required_mock):
     authenticated_user = create_authenticated_user()
     user_controller.validators.validate_input.side_effect = [authenticated_user.id, 'New User',
                                                              'new@example.com', 'new_password', 1]
@@ -69,7 +70,7 @@ def test_update_user(user_controller, create_authenticated_user, test_login_requ
     user_controller.session.commit()
 
 
-def test_delete_user(user_controller, create_authenticated_user, test_login_required):
+def test_delete_user(user_controller, create_authenticated_user, login_required_mock):
     authenticated_user = create_authenticated_user()
     user_controller.validators.validate_input.side_effect = [authenticated_user.id]
 
@@ -77,3 +78,27 @@ def test_delete_user(user_controller, create_authenticated_user, test_login_requ
     assert deleted_user is not None
     assert deleted_user.id == authenticated_user.id
     user_controller.session.commit()
+
+
+# def test_decorator(create_authenticated_user, mocker, login_required_mock):
+
+#     function_to_test = lambda *x, **y: "executed"
+#     function_to_call = TokenManager.token_required(function_to_test)
+#     return_value = function_to_call(create_authenticated_user)
+#     assert return_value == "executed"
+#     print(return_value)
+
+
+def test_decorator(create_authenticated_user, mocker, login_required_mock):
+    mock_token = "valid_token"
+    TokenManager.cache = mock_token
+    mocker.patch.object(TokenManager, 'check_token', return_value=1)
+
+    def function_to_test(*args, **kwargs):
+        return "executed"
+
+    function_to_call = TokenManager.token_required(function_to_test)
+    return_value = function_to_call(create_authenticated_user)
+
+    assert return_value == "executed"
+    print(return_value)

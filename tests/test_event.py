@@ -1,7 +1,7 @@
 from datetime import date
 
 
-def test_create_event(event_controller, test_login_required, mocker):
+def test_create_event(event_controller, login_required_mock, mocker):
     user = mocker.MagicMock(id=1)
     mocker.patch.object(event_controller.validators, 'validate_input', side_effect=[
         'Product Launch', 1, date.today(), date.today(), 'New York', 50, 'Important event'
@@ -12,7 +12,7 @@ def test_create_event(event_controller, test_login_required, mocker):
     assert event.event_name == 'Product Launch'
 
 
-def test_update_event(event_controller, create_mock_event, test_login_required, mocker):
+def test_update_event(event_controller, create_mock_event, login_required_mock, mocker):
     user = mocker.MagicMock(id=1)
     event = create_mock_event(event_name='Old Event', location='Old Location', attendees=10, notes='Old Notes')
 
@@ -42,7 +42,7 @@ def test_display_all_events(event_controller, create_mock_event, mocker):
     mock_display.assert_called_once_with([event1, event2])
 
 
-def test_add_support_to_event(event_controller, create_mock_event, test_login_required, mocker):
+def test_add_support_to_event(event_controller, create_mock_event, login_required_mock, mocker):
     user = mocker.MagicMock(id=1)
     event = create_mock_event(event_name='Event A', location='Location A', attendees=10, notes='Notes A')
 

@@ -56,11 +56,9 @@ class DataValidator:
         Returns:
             bool: True if the role ID is valid, False otherwise.
         """
-        roles = self.session.query(Role).all()
-
-        for role in roles:
-            if role.id == role_id:
-                return True
+        role_exists = self.session.query(Role).filter_by(id=role_id).first()
+        if role_exists:
+            return True
 
         MenuView.validate_role_id_view(role_id)
         return False

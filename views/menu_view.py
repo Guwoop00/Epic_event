@@ -261,21 +261,15 @@ class MenuView:
         )
 
     @staticmethod
-    def store_tokens_view(user_id):
+    def store_tokens_view():
         MenuView.console.print(
-            f"[bold green]Tokens enregistrés pour l'utilisateur {user_id}.[/bold green]"
+            "[bold green]Tokens enregistrés.[/bold green]"
         )
 
     @staticmethod
-    def get_tokens_view(user_id):
+    def clear_cache_view():
         MenuView.console.print(
-            f"[bold blue]Tokens récupérés pour l'utilisateur {user_id}.[/bold blue]"
-        )
-
-    @staticmethod
-    def clear_cache_view(user_id):
-        MenuView.console.print(
-            f"[bold green]Cache vidé pour l'utilisateur {user_id}.[/bold green]"
+            "[bold green]Vous êtes déconecté.[/bold green]"
         )
 
     @staticmethod

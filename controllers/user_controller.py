@@ -1,6 +1,5 @@
 from typing import Callable, Dict, Optional
 
-import sentry_sdk
 from argon2 import PasswordHasher
 from sqlalchemy.orm import Session
 
@@ -63,7 +62,6 @@ class UserController:
             self.user_view.incorrect_password()
             return None
 
-        print(User)
         return user
 
     @sentry_exception_handler
@@ -82,8 +80,8 @@ class UserController:
                                                self.validators.validate_email)
         password = self.validators.validate_input(prompts["password"],
                                                   self.validators.validate_password)
-        role_id = self.validators.validate_input(prompts["role_id"],
-                                                 self.validators.validate_role_id)
+        role_id = self.validators.validate_input(prompts["role_id"], lambda role_id:
+                                                 self.validators.validate_role_id(role_id))
         hashed_password = self.hash_password(password)
 
         user = User(full_name=full_name,
@@ -98,6 +96,7 @@ class UserController:
         self.user_view.user_created()
         return user
 
+    @sentry_exception_handler
     @TokenManager.token_required
     def update_user(self, user) -> Optional[User]:
         """
@@ -106,42 +105,39 @@ class UserController:
         :param user: The user updating the existing user (used for role verification)
         :return: The updated User object or None if the user was not found or update fails
         """
-        try:
-            prompts = self.user_view.user_view_prompts()
-            user_id = self.validators.validate_input(prompts["user_id"], lambda value:
-                                                     self.validators.validate_existing_user_id(value, user.id))
-            user = self.get_user(user_id)
+        prompts = self.user_view.user_view_prompts()
+        user_id = self.validators.validate_input(prompts["user_id"], lambda value:
+                                                 self.validators.validate_existing_user_id(value, user))
+        user = self.get_user(user_id)
 
-            if user:
-                prompts = self.user_view.get_update_user_prompts()
-                full_name = self.validators.validate_input(prompts["full_name"],
-                                                           self.validators.validate_str, allow_empty=True)
-                email = self.validators.validate_input(prompts["email"],
-                                                       self.validators.validate_email, allow_empty=True)
-                password = self.validators.validate_input(prompts["password"],
-                                                          self.validators.validate_password, allow_empty=True)
-                role_id = self.validators.validate_input(prompts["role_id"],
-                                                         self.validators.validate_role_id, allow_empty=True)
+        if user:
+            prompts = self.user_view.get_update_user_prompts()
+            full_name = self.validators.validate_input(prompts["full_name"],
+                                                       self.validators.validate_str, allow_empty=True)
+            email = self.validators.validate_input(prompts["email"],
+                                                   self.validators.validate_email, allow_empty=True)
+            password = self.validators.validate_input(prompts["password"],
+                                                      self.validators.validate_password, allow_empty=True)
+            role_id = self.validators.validate_input(prompts["role_id"],
+                                                     self.validators.validate_role_id, allow_empty=True)
 
-                if full_name:
-                    user.full_name = full_name
-                if email:
-                    user.email = email
-                if password:
-                    user.password = self.hash_password(password)
-                if role_id:
-                    user.role_id = role_id
+            if full_name:
+                user.full_name = full_name
+            if email:
+                user.email = email
+            if password:
+                user.password = self.hash_password(password)
+            if role_id:
+                user.role_id = role_id
 
-                self.session.commit()
-                self.session.refresh(user)
-                self.user_view.user_updated()
-            else:
-                self.user_view.user_not_found()
-            return user
+            self.session.commit()
+            self.session.refresh(user)
+            self.user_view.user_updated()
+        else:
+            self.user_view.user_not_found()
+        return user
 
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-
+    @sentry_exception_handler
     @TokenManager.token_required
     def delete_user(self, user) -> Optional[User]:
         """
@@ -150,45 +146,35 @@ class UserController:
         :param user: The user performing the delete action (used for role verification)
         :return: The deleted User object or None if the user was not found or deletion fails
         """
-        try:
-            prompts = self.user_view.user_view_prompts()
-            user_id = self.validators.validate_input(prompts["user_id"], lambda value:
-                                                     self.validators.validate_existing_user_id(value, user.id))
-            user = self.get_user(user_id)
+        prompts = self.user_view.user_view_prompts()
+        user_id = self.validators.validate_input(prompts["user_id"], lambda value:
+                                                 self.validators.validate_existing_user_id(value, user))
+        user = self.get_user(user_id)
 
-            if user:
-                self.session.delete(user)
-                self.session.commit()
-                self.user_view.user_deleted()
-            else:
-                self.user_view.user_not_found()
-            return user
+        if user:
+            self.session.delete(user)
+            self.session.commit()
+            self.user_view.user_deleted()
+        else:
+            self.user_view.user_not_found()
+        return user
 
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-            return None
-
+    @sentry_exception_handler
     def database(self, database_actions: Dict[int, Callable[[], None]]) -> None:
         """
         Displays the database management menu.
 
         :param database_actions: A dictionary of menu options and corresponding action functions
         """
-        try:
-            menu_option = self.menu_view.database_menu_options()
-            self.menu_view.display_menu(menu_option, database_actions)
+        menu_option = self.menu_view.database_menu_options()
+        self.menu_view.display_menu(menu_option, database_actions)
 
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-
+    @sentry_exception_handler
     @TokenManager.token_required
-    def logout(self, user) -> None:
+    def logout(self) -> None:
         """
         Logs out the user.
 
         :param user: The user to log out
         """
-        try:
-            self.token_manager.clear_cache(user.id)
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
+        self.token_manager.clear_cache()

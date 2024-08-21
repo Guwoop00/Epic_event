@@ -41,7 +41,7 @@ class EventController:
         event_name = self.validators.validate_input(prompts["event_name"], self.validators.validate_str)
         contract_id = self.validators.validate_input(prompts["contract_id"], lambda value:
                                                      self.validators.validate_existing_my_contract_id
-                                                     (value, user.id))
+                                                     (value, user))
         event_start_date = self.validators.validate_input(prompts["event_start_date"],
                                                           self.validators.validate_date)
         event_end_date = self.validators.validate_input(prompts["event_end_date"], self.validators.validate_date)
@@ -179,7 +179,7 @@ class EventController:
         """
 
         if filter_option == 1:
-            return self.session.query(Event).filter(Event.support_contact_id == user.id).all()
+            return self.session.query(Event).filter(Event.support_contact_id == user).all()
         else:
             return self.session.query(Event).all()
 

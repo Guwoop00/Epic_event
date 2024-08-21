@@ -1,24 +1,11 @@
 import jwt
 from datetime import datetime, timedelta, timezone
 
-from views.menu_view import MenuView
 
-
-def test_store_tokens(token_manager, mock_user, mocker):
+def test_store_tokens(token_manager):
     """Test pour vérifier que les tokens sont correctement stockés."""
-    mock_view = mocker.spy(MenuView, 'store_tokens_view')
-    token_manager.store_tokens(mock_user.id, 'fake_token')
-    assert token_manager.cache[mock_user.id] == 'fake_token'
-    mock_view.assert_called_once_with(mock_user.id)
-
-
-def test_get_tokens(token_manager, mock_user, mocker):
-    """Test pour vérifier que les tokens sont correctement récupérés."""
-    token_manager.cache[mock_user.id] = 'fake_token'
-    mock_view = mocker.spy(MenuView, 'get_tokens_view')
-    token = token_manager.get_tokens(mock_user.id)
-    assert token == 'fake_token'
-    mock_view.assert_called_once_with(mock_user.id)
+    token_manager.store_tokens('fake_token')
+    assert token_manager.cache == 'fake_token'
 
 
 def test_create_token(token_manager, mock_user):
@@ -68,12 +55,12 @@ def test_validate_token(token_manager, mock_user):
 def test_check_token_valid(token_manager, mock_user):
     """Test pour vérifier que check_token retourne l'user_id pour un token valide."""
     token = token_manager.create_token(mock_user)
-    user_id = token_manager.check_token(token, mock_user)
+    user_id = token_manager.check_token(token)
     assert user_id == mock_user.id
 
 
 def test_check_token_invalid(token_manager, mock_user):
     """Test pour vérifier que check_token retourne None pour un token invalide."""
     invalid_token = 'this.is.an.invalid.token'
-    user_id = token_manager.check_token(invalid_token, mock_user)
+    user_id = token_manager.check_token(invalid_token)
     assert user_id is None

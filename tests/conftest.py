@@ -161,8 +161,8 @@ def create_contract(session) -> Callable[[int, float, float, bool], Contract]:
 
 
 @pytest.fixture
-def test_login_required(mocker) -> None:
+def login_required_mock(mocker) -> None:
     """Mock the login required behavior for testing."""
-    mocker.patch.object(TokenManager, 'get_tokens', return_value="fake_access_token")
+    mocker.patch.object(TokenManager, 'cache', "fake_access_token")
     mocker.patch.object(TokenManager, 'check_token', return_value=True)
     mocker.patch.object(TokenManager, 'validate_token', return_value=True)
