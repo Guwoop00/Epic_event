@@ -39,7 +39,7 @@ def session() -> Generator:
 def user_controller(session, mocker) -> UserController:
     """Fixture for initializing the UserController with mocked dependencies."""
     user_controller = UserController(session=session)
-    user_controller.token_manager = TokenManager()
+    # user_controller.token_manager = TokenManager()
     user_controller.user_view = mocker.MagicMock()
     user_controller.validators = mocker.MagicMock()
     return user_controller
@@ -163,6 +163,9 @@ def create_contract(session) -> Callable[[int, float, float, bool], Contract]:
 @pytest.fixture
 def login_required_mock(mocker) -> None:
     """Mock the login required behavior for testing."""
+    mocker.patch("jwtoken.TokenManager.cache", return_value="fake_access_token")
+    mocker.patch("jwtoken.jwt.decode")
     mocker.patch.object(TokenManager, 'cache', "fake_access_token")
-    mocker.patch.object(TokenManager, 'check_token', return_value=True)
+    mocker.patch.object(TokenManager, 'decode_token', return_value=1)
+    mocker.patch.object(TokenManager, 'check_token', return_value=1)
     mocker.patch.object(TokenManager, 'validate_token', return_value=True)

@@ -80,25 +80,8 @@ def test_delete_user(user_controller, create_authenticated_user, login_required_
     user_controller.session.commit()
 
 
-# def test_decorator(create_authenticated_user, mocker, login_required_mock):
-
-#     function_to_test = lambda *x, **y: "executed"
-#     function_to_call = TokenManager.token_required(function_to_test)
-#     return_value = function_to_call(create_authenticated_user)
-#     assert return_value == "executed"
-#     print(return_value)
-
-
-def test_decorator(create_authenticated_user, mocker, login_required_mock):
-    mock_token = "valid_token"
-    TokenManager.cache = mock_token
-    mocker.patch.object(TokenManager, 'check_token', return_value=1)
-
-    def function_to_test(*args, **kwargs):
-        return "executed"
-
+def test_decorator(mocker, create_authenticated_user, login_required_mock):
+    function_to_test = lambda *x, **y: "executed"
     function_to_call = TokenManager.token_required(function_to_test)
     return_value = function_to_call(create_authenticated_user)
-
     assert return_value == "executed"
-    print(return_value)

@@ -51,6 +51,7 @@ class TokenManager:
     @sentry_exception_handler
     def decode_token(cls, token: str) -> Optional[int]:
         """Decodes a JWT token and returns the user ID if valid, otherwise returns None."""
+        # import pdb; pdb.set_trace()
         try:
             payload = jwt.decode(token, cls.SECRET_KEY, algorithms=['HS256'])
             return payload['user_id']
@@ -82,6 +83,7 @@ class TokenManager:
                 raise InvalidTokenException(MenuView.required_token_view())
 
             user_id_valid = TokenManager.check_token(token)
+            # import pdb; pdb.set_trace()
 
             if user_id_valid is None:
                 raise InvalidTokenException(MenuView.invalid_token_view())
