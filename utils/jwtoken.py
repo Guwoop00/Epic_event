@@ -83,7 +83,6 @@ class TokenManager:
                 raise InvalidTokenException(MenuView.required_token_view())
 
             user_id_valid = TokenManager.check_token(token)
-            # import pdb; pdb.set_trace()
 
             if user_id_valid is None:
                 raise InvalidTokenException(MenuView.invalid_token_view())
