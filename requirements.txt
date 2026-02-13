@@ -16,4 +16,4 @@ rich==13.7.1
 sqlacodegen==2.3.0.post1
 SQLAlchemy==2.0.31
 SQLAlchemy-Utils==0.41.2
-sqlparse==0.5.0
+sqlparse==0.5.4
